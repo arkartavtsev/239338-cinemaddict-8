@@ -1,7 +1,7 @@
 # Личный проект «Киноман» [![Build status][travis-image]][travis-url]
 
-* Студент: [Артем Картавцев](https://up.htmlacademy.ru/ecmascript/8/user/239338).
-* Наставник: `Неизвестно`.
+* Студент: [Артем Картавцев](https://htmlacademy.ru/profile/arkartavtsev).
+* Наставник: [Сергей Вохмянин](https://htmlacademy.ru/profile/id530823).
 
 ---
 
