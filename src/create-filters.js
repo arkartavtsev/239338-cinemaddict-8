@@ -1,6 +1,4 @@
 import {getRandomNum} from './util';
-import removeDebounce from './remove-debounce';
-import createCards from './create-cards';
 
 
 const Filters = {
@@ -9,30 +7,10 @@ const Filters = {
     `History`,
     `Favorites`
   ],
-  MIN_COUNT: 1,
-  MAX_COUNT: 5
-};
-
-
-const toggleFilter = (filter) => {
-  filter.parentElement.querySelector(`.main-navigation__item--active`).classList.remove(`main-navigation__item--active`);
-  filter.classList.add(`main-navigation__item--active`);
-
-  createCards(filter.dataset.count);
-};
-
-const onFilterClick = (evt) => {
-  evt.preventDefault();
-
-  removeDebounce(() => {
-    let target = evt.target;
-
-    while (!target.parentElement.classList.contains(`main-navigation`)) {
-      target = target.parentElement;
-    }
-
-    toggleFilter(target);
-  });
+  Count: {
+    MIN: 1,
+    MAX: 5
+  }
 };
 
 
@@ -40,37 +18,26 @@ const createFilterCounter = (count) => `
   <span class="main-navigation__item-count">${count}</span>
 `;
 
-const createFilter = (name, count, hasCounter = true) => {
-  const filter = document.createElement(`a`);
-
-  filter.classList.add(`main-navigation__item`);
-  filter.href = `#${name.slice(0, name.indexOf(` `)).toLowerCase()}`;
-  filter.dataset.count = count;
-
-  filter.innerHTML = hasCounter ?
-    `${name} ${createFilterCounter(count)}` :
-    `${name}`;
-
-  filter.addEventListener(`click`, onFilterClick);
-
-  return filter;
-};
+const createFilter = (name, count, isActive = false, hasCounter = true) => `
+  <a class="main-navigation__item ${isActive ? `main-navigation__item--active` : ``}" data-count="${count}" href="#${name.slice(0, name.indexOf(` `)).toLowerCase()}">
+    ${name}
+    ${hasCounter ? createFilterCounter(count) : ``}
+  </a>
+`;
 
 
 export default (container) => {
-  let allFiltersCountValue = 0;
-  const fragment = document.createDocumentFragment();
+  let allFiltersCounterValue = 0;
+  let allFiltersMarkup = ``;
 
   for (const filterName of Filters.NAMES) {
-    const filterCount = getRandomNum(Filters.MIN_COUNT, Filters.MAX_COUNT);
+    const filterCount = getRandomNum(Filters.Count.MIN, Filters.Count.MAX);
 
-    allFiltersCountValue += filterCount;
-    fragment.append(createFilter(filterName, filterCount));
+    allFiltersCounterValue += filterCount;
+    allFiltersMarkup += createFilter(filterName, filterCount);
   }
 
-  const mainFilter = createFilter(`All movies`, allFiltersCountValue, false);
-  mainFilter.classList.add(`main-navigation__item--active`);
+  const mainFilterMarkup = createFilter(`All movies`, allFiltersCounterValue, true, false);
 
-  fragment.prepend(mainFilter);
-  container.prepend(fragment);
+  container.insertAdjacentHTML(`afterbegin`, mainFilterMarkup + allFiltersMarkup);
 };
