@@ -1,12 +1,10 @@
-import removeDebounce from './remove-debounce';
+import {EXTRA_FILMS_COUNT} from './const';
 
+import removeDebounce from './remove-debounce';
 import getData from './data';
 
 import createFilters from './create-filters';
 import createCards from './create-cards';
-
-
-const EXTRA_FILMS_COUNT = 2;
 
 
 const filtersContainer = document.querySelector(`.main-navigation`);
