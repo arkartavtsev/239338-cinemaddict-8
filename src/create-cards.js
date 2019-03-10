@@ -1,35 +1,18 @@
-const FilmParamenters = {
-  title: `Accused`,
-  rating: `9.8`,
-  year: `2018`,
-  duration: `1h&nbsp;13m`,
-  genre: `Comedy`,
-  poster: `accused`,
-  description: `A priests Romania and confront a malevolent force in the form of a demonic nun.`,
-  commentsCount: 13
-};
-
-
 const mainFilmsContainer = document.querySelector(`.films-list .films-list__container`);
 
 
-const createCardDescription = (filmParamenters) => `
-  <h3 class="film-card__title">${filmParamenters.title}</h3>
-  <p class="film-card__rating">${filmParamenters.rating}</p>
-  <p class="film-card__info">
-    <span class="film-card__year">${filmParamenters.year}</span>
-    <span class="film-card__duration">${filmParamenters.duration}</span>
-    <span class="film-card__genre">${filmParamenters.genre}</span>
-  </p>
-  <img src="./images/posters/${filmParamenters.poster}.jpg" alt="${filmParamenters.title} movie poster" class="film-card__poster">
-  <p class="film-card__description">${filmParamenters.description}</p>
+const addDuration = (duration) => {
+  const hours = Math.trunc(duration / 60);
+  const minutes = duration - hours * 60;
+
+  return `${hours}h&nbsp;${minutes}m`;
+};
+
+const addDescription = (description) => `
+  <p class="film-card__description">${description}</p>
 `;
 
-const createCardCommentsBtn = (commentsCount) => `
-  <button class="film-card__comments">${commentsCount} comments</button>
-`;
-
-const createCardControls = () => `
+const addControls = () => `
   <form class="film-card__controls">
     <button class="film-card__controls-item button film-card__controls-item--add-to-watchlist">Add to watchlist</button>
     <button class="film-card__controls-item button film-card__controls-item--mark-as-watched">Mark as watched</button>
@@ -38,31 +21,26 @@ const createCardControls = () => `
 `;
 
 
-const createCard = (filmParamenters, hasControls) => {
-  const card = document.createElement(`article`);
+const createMovieCard = (movieData, isFull) => `
+  <article class="film-card  ${isFull ? `` : `film-card--no-controls`}">
+    <h3 class="film-card__title">${movieData.title}</h3>
+    <p class="film-card__rating">${movieData.rating}</p>
+    <p class="film-card__info">
+      <span class="film-card__year">${movieData.year}</span>
+      <span class="film-card__duration">${addDuration(movieData.duration)}</span>
+      <span class="film-card__genre">${movieData.genre}</span>
+    </p>
+    <img src="${movieData.posterUrl}" alt="${movieData.title} movie poster" class="film-card__poster">
 
-  card.classList.add(`film-card`);
+    ${isFull ? addDescription(movieData.description) : ``}
 
-  card.insertAdjacentHTML(`beforeend`, createCardDescription(filmParamenters));
-  card.insertAdjacentHTML(`beforeend`, createCardCommentsBtn(filmParamenters.commentsCount));
+    <button class="film-card__comments">${movieData.commentsCount} ${movieData.commentsCount === 1 ? `comment` : `comments`}</button>
 
-  if (hasControls) {
-    card.insertAdjacentHTML(`beforeend`, createCardControls());
-  } else {
-    card.classList.add(`film-card--no-controls`);
-  }
-
-  return card;
-};
+    ${isFull ? addControls() : ``}
+  </article>
+`;
 
 
-export default (count, hasControls = true, container = mainFilmsContainer) => {
-  const fragment = document.createDocumentFragment();
-
-  for (let i = 0; i < count; i++) {
-    fragment.append(createCard(FilmParamenters, hasControls));
-  }
-
-  container.innerHTML = ``;
-  container.append(fragment);
+export default (data, isFull = true, container = mainFilmsContainer) => {
+  container.innerHTML = data.map((movieData) => createMovieCard(movieData, isFull)).join(``);
 };

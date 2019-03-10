@@ -1,5 +1,7 @@
 import removeDebounce from './remove-debounce';
 
+import getData from './data';
+
 import createFilters from './create-filters';
 import createCards from './create-cards';
 
@@ -29,7 +31,7 @@ const toggleFilter = (filter) => {
     currentActive.classList.remove(`main-navigation__item--active`);
     filter.classList.add(`main-navigation__item--active`);
 
-    createCards(filter.dataset.count);
+    createCards(getData(filter.dataset.count));
   }
 };
 
@@ -62,8 +64,8 @@ for (const filter of filters) {
 
 const activeFilter = filtersContainer.querySelector(`.main-navigation__item--active`);
 
-createCards(activeFilter.dataset.count);
+createCards(getData(activeFilter.dataset.count));
 
 for (const container of extraFilmsContainers) {
-  createCards(EXTRA_FILMS_COUNT, false, container);
+  createCards(getData(EXTRA_FILMS_COUNT), false, container);
 }
