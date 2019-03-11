@@ -1,6 +1,5 @@
 import {EXTRA_FILMS_COUNT} from './const';
 
-import removeDebounce from './remove-debounce';
 import getData from './data';
 
 import createFilters from './create-filters';
@@ -13,6 +12,7 @@ const extraFilmsContainers = document.querySelectorAll(`.films-list--extra .film
 
 // создание фильтров
 
+
 const deleteExistingFilters = () => {
   const existingFilters = filtersContainer.querySelectorAll(`.main-navigation__item:not(.main-navigation__item--additional)`);
 
@@ -22,29 +22,17 @@ const deleteExistingFilters = () => {
 };
 
 
-const toggleFilter = (filter) => {
-  const currentActive = filter.parentElement.querySelector(`.main-navigation__item--active`);
-
-  if (currentActive && currentActive !== filter) {
-    currentActive.classList.remove(`main-navigation__item--active`);
-    filter.classList.add(`main-navigation__item--active`);
-
-    createCards(getData(filter.dataset.count));
-  }
-};
-
 const onFilterClick = (evt) => {
   evt.preventDefault();
 
-  removeDebounce(() => {
-    let target = evt.target;
+  const currentActive = evt.currentTarget.parentElement.querySelector(`.main-navigation__item--active`);
 
-    while (!target.parentElement.classList.contains(`main-navigation`)) {
-      target = target.parentElement;
-    }
+  if (currentActive && currentActive !== evt.currentTarget) {
+    currentActive.classList.remove(`main-navigation__item--active`);
+    evt.currentTarget.classList.add(`main-navigation__item--active`);
 
-    toggleFilter(target);
-  });
+    createCards(getData(evt.currentTarget.dataset.count));
+  }
 };
 
 
@@ -59,6 +47,7 @@ for (const filter of filters) {
 
 
 // создание карточек
+
 
 const activeFilter = filtersContainer.querySelector(`.main-navigation__item--active`);
 
