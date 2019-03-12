@@ -1,7 +1,7 @@
-import {getRandomNum, getRandomItem} from './util';
+import {getRandomNum, getRandomItem, getUniqueRandomItems} from './util';
 
 
-const MoviesProperties = {
+const Properties = {
   TITLES: [
     `The Accused`,
     `Blackmail`,
@@ -20,19 +20,6 @@ const MoviesProperties = {
     `The Godfather`
   ],
 
-  GENRES: [
-    `Action`,
-    `Adventure`,
-    `Comedy`,
-    `Crime`,
-    `Drama`,
-    `History`,
-    `Horror`,
-    `Thriller`,
-    `War`,
-    `Western`
-  ],
-
   POSTERS_NAMES: [
     `accused`,
     `blackmail`,
@@ -42,11 +29,74 @@ const MoviesProperties = {
     `three-friends`
   ],
 
-  Description: {
+  AGE_RATINGS: [
+    3,
+    7,
+    12,
+    16,
+    18
+  ],
+
+  COUNTRIES: [
+    `USA`,
+    `UK`,
+    `France`,
+    `Italy`,
+    `Germany`,
+    `Spain`
+  ],
+
+  PEOPLE: [
+    `Brad Bird`,
+    `Samuel L. Jackson`,
+    `Catherine Keener`,
+    `Sophia Bush`,
+    `Sergio Leone`,
+    `Peter Jackson`,
+    `Mahershala Ali`,
+    `Bradley Cooper`,
+    `Francis Ford Coppola`,
+    `Christopher Nolan`
+  ],
+
+  Genres: {
+    Count: {
+      MIN: 2,
+      MAX: 3
+    },
+    NAMES: [
+      `Action`,
+      `Adventure`,
+      `Comedy`,
+      `Crime`,
+      `Drama`,
+      `History`,
+      `Horror`,
+      `Thriller`,
+      `War`,
+      `Western`
+    ],
+  },
+
+  Comments: {
+    Count: {
+      MIN: 0,
+      MAX: 15
+    },
+    PERIOD: 2,
+    EMOJIES: [
+      `&#x1F634`,
+      `&#x1F610`,
+      `&#x1F600`
+    ]
+  },
+
+  TextContent: {
     Length: {
       MIN: 1,
       MAX: 3
     },
+
     SENTENCES: [
       `Lorem ipsum dolor sit amet, consectetur adipiscing elit.`,
       `Cras aliquet varius magna, non porta ligula feugiat eget.`,
@@ -62,6 +112,16 @@ const MoviesProperties = {
     ]
   },
 
+  WritersCount: {
+    MIN: 1,
+    MAX: 2
+  },
+
+  ActorsCount: {
+    MIN: 2,
+    MAX: 4
+  },
+
   Rating: {
     MIN: 1,
     MAX: 10
@@ -75,46 +135,61 @@ const MoviesProperties = {
   Duration: {
     MIN: 90,
     MAX: 210
-  },
-
-  CommentsCount: {
-    MIN: 0,
-    MAX: 15
   }
 };
 
 
 const getRandomRating = (min, max) => getRandomNum(min * 10, max * 10) / 10;
 
-const getRandomDescription = (minLength, maxlength, possibleSentences) => {
-  const description = new Set();
+const getRandomPastDateWithinYears = (years) => Date.now() + (getRandomNum(-years, 0) * 365 + getRandomNum(-365, 0)) * 24 * 60 * 60 * 1000;
 
-  for (let i = 0; i < getRandomNum(minLength, maxlength); i++) {
-    description.add(getRandomItem(possibleSentences));
-  }
-
-  return Array.from(description).join(` `);
-};
+const getRandomText = (properties) => getUniqueRandomItems(properties.Length.MIN, properties.Length.MAX, properties.SENTENCES).join(` `);
 
 
-const generateMovieInfo = (properties) => ({
-  title: getRandomItem(properties.TITLES),
-  rating: getRandomRating(properties.Rating.MIN, properties.Rating.MAX),
-  year: getRandomNum(properties.Year.MIN, properties.Year.MAX),
-  duration: getRandomNum(properties.Duration.MIN, properties.Duration.MAX),
-  genre: getRandomItem(properties.GENRES),
-  description: getRandomDescription(properties.Description.Length.MIN, properties.Description.Length.MAX, properties.Description.SENTENCES),
-  posterUrl: `images/posters/${getRandomItem(properties.POSTERS_NAMES)}.jpg`,
-  commentsCount: getRandomNum(properties.CommentsCount.MIN, properties.CommentsCount.MAX)
+const generateComment = (properties) => ({
+  author: getRandomItem(properties.PEOPLE),
+  date: getRandomPastDateWithinYears(properties.Comments.PERIOD),
+  text: getRandomText(properties.TextContent),
+  emoji: getRandomItem(properties.Comments.EMOJIES)
 });
 
 
-export default (count) => {
-  let movies = [];
+const generateMovieInfo = (properties) => {
+  const title = getRandomItem(properties.TITLES);
+
+  return {
+    title,
+    originalTitle: title,
+
+    rating: getRandomRating(properties.Rating.MIN, properties.Rating.MAX),
+    ageRating: getRandomItem(properties.AGE_RATINGS),
+
+    country: getRandomItem(properties.COUNTRIES),
+    releaseDate: getRandomPastDateWithinYears(properties.Year.MAX - properties.Year.MIN),
+
+    director: getRandomItem(properties.PEOPLE),
+    writers: getUniqueRandomItems(properties.WritersCount.MIN, properties.WritersCount.MAX, properties.PEOPLE),
+    actors: getUniqueRandomItems(properties.ActorsCount.MIN, properties.ActorsCount.MAX, properties.PEOPLE),
+
+    duration: getRandomNum(properties.Duration.MIN, properties.Duration.MAX),
+    genres: getUniqueRandomItems(properties.Genres.Count.MIN, properties.Genres.Count.MAX, properties.Genres.NAMES),
+    description: getRandomText(properties.TextContent),
+    posterUrl: `images/posters/${getRandomItem(properties.POSTERS_NAMES)}.jpg`,
+
+    comments: generateItems(getRandomNum(properties.Comments.Count.MIN, properties.Comments.Count.MAX), generateComment)
+  };
+};
+
+
+const generateItems = (count, callback) => {
+  let comments = [];
 
   for (let i = 0; i < count; i++) {
-    movies.push(generateMovieInfo(MoviesProperties));
+    comments.push(callback(Properties));
   }
 
-  return movies;
+  return comments;
 };
+
+
+export default (count) => generateItems(count, generateMovieInfo);

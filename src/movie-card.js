@@ -5,12 +5,12 @@ export default class MovieCard {
   constructor(data) {
     this._title = data.title;
     this._rating = data.rating;
-    this._year = data.year;
+    this._year = new Date(data.releaseDate).getFullYear();
     this._duration = data.duration;
-    this._genre = data.genre;
+    this._genre = data.genres[0];
     this._description = data.description;
     this._posterUrl = data.posterUrl;
-    this._commentsCount = data.commentsCount;
+    this._commentsCount = data.comments.length;
 
     this._element = null;
 
