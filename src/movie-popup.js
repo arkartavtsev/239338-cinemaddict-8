@@ -1,3 +1,5 @@
+import {EMOJI_LIST, MOVIE_MAX_SCORE} from './const';
+
 import Component from './component';
 
 
@@ -92,6 +94,26 @@ export default class MoviePopup extends Component {
     `).join(` `);
   }
 
+  _addEmojiPickers() {
+    return Object.keys(EMOJI_LIST).map((emojiName) => `
+      <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-${emojiName}" value="${emojiName}">
+      <label class="film-details__emoji-label" for="emoji-${emojiName}">${EMOJI_LIST[emojiName]}</label>
+    `).join(` `);
+  }
+
+  _addScorePickers() {
+    let scorePickersMarkup = ``;
+
+    for (let i = 1; i <= MOVIE_MAX_SCORE; i++) {
+      scorePickersMarkup += `
+        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="${i}" id="rating-${i}" ${i === Math.ceil(MOVIE_MAX_SCORE / 2) ? `checked` : ``}>
+        <label class="film-details__user-rating-label" for="rating-${i}">${i}</label>
+      `;
+    }
+
+    return scorePickersMarkup;
+  }
+
   get template() {
     return `
       <section class="film-details">
@@ -176,18 +198,11 @@ export default class MoviePopup extends Component {
 
             <div class="film-details__new-comment">
               <div>
-                <label for="add-emoji" class="film-details__add-emoji-label">😐</label>
+                <label for="add-emoji" class="film-details__add-emoji-label">${EMOJI_LIST[`neutral-face`]}</label>
                 <input type="checkbox" class="film-details__add-emoji visually-hidden" id="add-emoji">
 
                 <div class="film-details__emoji-list">
-                  <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-sleeping" value="sleeping">
-                  <label class="film-details__emoji-label" for="emoji-sleeping">😴</label>
-
-                  <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-neutral-face" value="neutral-face" checked>
-                  <label class="film-details__emoji-label" for="emoji-neutral-face">😐</label>
-
-                  <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-grinning" value="grinning">
-                  <label class="film-details__emoji-label" for="emoji-grinning">😀</label>
+                  ${this._addEmojiPickers()}
                 </div>
               </div>
               <label class="film-details__comment-label">
@@ -213,32 +228,7 @@ export default class MoviePopup extends Component {
                 <p class="film-details__user-rating-feelings">How you feel it?</p>
 
                 <div class="film-details__user-rating-score">
-                  <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="1" id="rating-1">
-                  <label class="film-details__user-rating-label" for="rating-1">1</label>
-
-                  <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="2" id="rating-2">
-                  <label class="film-details__user-rating-label" for="rating-2">2</label>
-
-                  <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="3" id="rating-3">
-                  <label class="film-details__user-rating-label" for="rating-3">3</label>
-
-                  <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="4" id="rating-4">
-                  <label class="film-details__user-rating-label" for="rating-4">4</label>
-
-                  <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="5" id="rating-5" checked>
-                  <label class="film-details__user-rating-label" for="rating-5">5</label>
-
-                  <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="6" id="rating-6">
-                  <label class="film-details__user-rating-label" for="rating-6">6</label>
-
-                  <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="7" id="rating-7">
-                  <label class="film-details__user-rating-label" for="rating-7">7</label>
-
-                  <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="8" id="rating-8">
-                  <label class="film-details__user-rating-label" for="rating-8">8</label>
-
-                  <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="9" id="rating-9">
-                  <label class="film-details__user-rating-label" for="rating-9">9</label>
+                  ${this._addScorePickers()}
                 </div>
               </section>
             </div>

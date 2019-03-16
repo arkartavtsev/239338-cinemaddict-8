@@ -10,4 +10,13 @@ export const Filters = {
   }
 };
 
+export const EMOJI_LIST = {
+  'sleeping': `&#x1F634`,
+  'neutral-face': `&#x1F610`,
+  'grinning': `&#x1F600`
+};
+
+
 export const EXTRA_FILMS_COUNT = 2;
+
+export const MOVIE_MAX_SCORE = 9;
