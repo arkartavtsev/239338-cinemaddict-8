@@ -1,3 +1,4 @@
+import {EMOJI_LIST} from './const';
 import {getRandomNum, getRandomItem, getUniqueRandomItems} from './util';
 
 
@@ -83,12 +84,7 @@ const Properties = {
       MIN: 0,
       MAX: 15
     },
-    PERIOD: 2,
-    EMOJIES: [
-      `&#x1F634`,
-      `&#x1F610`,
-      `&#x1F600`
-    ]
+    YEARS_PERIOD: 2
   },
 
   TextContent: {
@@ -148,9 +144,9 @@ const getRandomText = (properties) => getUniqueRandomItems(properties.Length.MIN
 
 const generateComment = (properties) => ({
   author: getRandomItem(properties.PEOPLE),
-  date: getRandomPastDateWithinYears(properties.Comments.PERIOD),
+  date: getRandomPastDateWithinYears(properties.Comments.YEARS_PERIOD),
   text: getRandomText(properties.TextContent),
-  emoji: getRandomItem(properties.Comments.EMOJIES)
+  emoji: getRandomItem(Object.values(EMOJI_LIST))
 });
 
 
