@@ -15,13 +15,12 @@ export default (data, isFull = true, container = mainFilmsContainer) => {
     const moviePopupComponent = new MoviePopup(movieData);
 
     movieCardComponent.isFull = isFull;
-    movieCardComponent.onClick = () => {
+    movieCardComponent.onPopupOpen = () => {
       moviePopupComponent.render();
       document.body.appendChild(moviePopupComponent.element);
     };
 
-    moviePopupComponent.onClick = () => {
-      document.body.removeChild(moviePopupComponent.element);
+    moviePopupComponent.onPopupClose = () => {
       moviePopupComponent.unrender();
     };
 

@@ -1,24 +1,28 @@
-import {createElement} from './util';
+import Component from './component';
 
 
-export default class MovieCard {
+export default class MovieCard extends Component {
   constructor(data) {
+    super();
+
     this._title = data.title;
-    this._rating = data.rating;
-    this._year = new Date(data.releaseDate).getFullYear();
+
     this._duration = data.duration;
     this._genre = data.genres[0];
     this._description = data.description;
     this._posterUrl = data.posterUrl;
-    this._commentsCount = data.comments.length;
 
-    this._element = null;
+    this._rating = data.rating;
+
+    this._year = new Date(data.releaseDate).getFullYear();
+
+    this._commentsCount = data.comments.length;
 
     this._state = {
       isFull: true
     };
 
-    this._onClick = null;
+    this._onPopupOpen = null;
     this._onCommentsBtnClick = this._onCommentsBtnClick.bind(this);
   }
 
@@ -68,46 +72,29 @@ export default class MovieCard {
   }
 
 
-  get element() {
-    return this._element;
-  }
-
   set isFull(state) {
     this._state.isFull = state;
   }
 
 
-  set onClick(fn) {
-    this._onClick = fn;
+  set onPopupOpen(fn) {
+    this._onPopupOpen = fn;
   }
 
   _onCommentsBtnClick() {
-    if (typeof this._onClick === `function`) {
-      this._onClick();
+    if (typeof this._onPopupOpen === `function`) {
+      this._onPopupOpen();
     }
   }
 
 
-  bind() {
+  addListeners() {
     this._element.querySelector(`.film-card__comments`)
       .addEventListener(`click`, this._onCommentsBtnClick);
   }
 
-  unbind() {
+  removeListeners() {
     this._element.querySelector(`.film-card__comments`)
       .removeEventListener(`click`, this._onCommentsBtnClick);
-  }
-
-
-  render() {
-    this._element = createElement(this.template);
-    this.bind();
-
-    return this._element;
-  }
-
-  unrender() {
-    this.unbind();
-    this._element = null;
   }
 }

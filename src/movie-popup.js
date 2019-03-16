@@ -1,26 +1,31 @@
-import {createElement} from './util';
+import Component from './component';
 
 
-export default class MoviePopup {
+export default class MoviePopup extends Component {
   constructor(data) {
+    super();
+
     this._title = data.title;
     this._originalTitle = data.originalTitle;
-    this._rating = data.rating;
-    this._ageRating = data.ageRating;
-    this._releaseDate = data.releaseDate;
-    this._country = data.country;
+
     this._duration = data.duration;
-    this._director = data.director;
-    this._writers = data.writers;
-    this._actors = data.actors;
     this._genres = data.genres;
     this._description = data.description;
     this._posterUrl = data.posterUrl;
+
+    this._rating = data.rating;
+    this._ageRating = data.ageRating;
+
+    this._releaseDate = data.releaseDate;
+    this._country = data.country;
+
+    this._director = data.director;
+    this._writers = data.writers;
+    this._actors = data.actors;
+
     this._comments = data.comments;
 
-    this._element = null;
-
-    this._onClick = null;
+    this._onPopupClose = null;
     this._onCloseBtnClick = this._onCloseBtnClick.bind(this);
   }
 
@@ -244,42 +249,24 @@ export default class MoviePopup {
   }
 
 
-  get element() {
-    return this._element;
-  }
-
-
-  set onClick(fn) {
-    this._onClick = fn;
+  set onPopupClose(fn) {
+    this._onPopupClose = fn;
   }
 
   _onCloseBtnClick() {
-    if (typeof this._onClick === `function`) {
-      this._onClick();
+    if (typeof this._onPopupClose === `function`) {
+      this._onPopupClose();
     }
   }
 
 
-  bind() {
+  addListeners() {
     this._element.querySelector(`.film-details__close-btn`)
       .addEventListener(`click`, this._onCloseBtnClick);
   }
 
-  unbind() {
+  removeListeners() {
     this._element.querySelector(`.film-details__close-btn`)
       .removeEventListener(`click`, this._onCloseBtnClick);
-  }
-
-
-  render() {
-    this._element = createElement(this.template);
-    this.bind();
-
-    return this._element;
-  }
-
-  unrender() {
-    this.unbind();
-    this._element = null;
   }
 }
