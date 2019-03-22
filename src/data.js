@@ -1,4 +1,4 @@
-import {EMOJI_LIST} from './const';
+import {EMOJI_LIST, MOVIE_MAX_SCORE} from './const';
 import {getRandomNum, getRandomItem, getUniqueRandomItems} from './util';
 
 
@@ -120,7 +120,7 @@ const Properties = {
 
   Rating: {
     MIN: 1,
-    MAX: 10
+    MAX: MOVIE_MAX_SCORE
   },
 
   Year: {
@@ -158,6 +158,8 @@ const generateMovieInfo = (properties) => {
     originalTitle: title,
 
     rating: getRandomRating(properties.Rating.MIN, properties.Rating.MAX),
+    userRating: getRandomNum(properties.Rating.MIN, properties.Rating.MAX),
+
     ageRating: getRandomItem(properties.AGE_RATINGS),
 
     country: getRandomItem(properties.COUNTRIES),

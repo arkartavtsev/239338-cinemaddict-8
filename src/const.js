@@ -19,4 +19,4 @@ export const EMOJI_LIST = {
 
 export const EXTRA_FILMS_COUNT = 2;
 
-export const MOVIE_MAX_SCORE = 9;
+export const MOVIE_MAX_SCORE = 10;

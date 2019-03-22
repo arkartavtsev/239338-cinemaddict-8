@@ -16,6 +16,8 @@ export default class MoviePopup extends Component {
     this._posterUrl = data.posterUrl;
 
     this._rating = data.rating;
+    this._userRating = data.userRating;
+
     this._ageRating = data.ageRating;
 
     this._releaseDate = data.releaseDate;
