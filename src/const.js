@@ -1,3 +1,8 @@
+export const KeyCode = {
+  ENTER: 13
+};
+
+
 export const Filters = {
   NAMES: [
     `Watchlist`,

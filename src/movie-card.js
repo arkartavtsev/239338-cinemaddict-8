@@ -22,6 +22,10 @@ export default class MovieCard extends Component {
       isFull: true
     };
 
+
+    this._commentsBtn = null;
+
+
     this._onPopupOpen = null;
     this._onCommentsBtnClick = this._onCommentsBtnClick.bind(this);
   }
@@ -38,6 +42,10 @@ export default class MovieCard extends Component {
     return `
       <p class="film-card__description">${this._description}</p>
     `;
+  }
+
+  _addCommentsCount() {
+    return `${this._commentsCount} ${this._commentsCount === 1 ? `comment` : `comments`}`;
   }
 
   _addControls() {
@@ -64,7 +72,7 @@ export default class MovieCard extends Component {
 
         ${this._state.isFull ? this._addDescription() : ``}
 
-        <button class="film-card__comments">${this._commentsCount} ${this._commentsCount === 1 ? `comment` : `comments`}</button>
+        <button class="film-card__comments">${this._addCommentsCount()}</button>
 
         ${this._state.isFull ? this._addControls() : ``}
       </article>
@@ -76,10 +84,16 @@ export default class MovieCard extends Component {
     this._state.isFull = state;
   }
 
-
   set onPopupOpen(fn) {
     this._onPopupOpen = fn;
   }
+
+
+  update(data) {
+    this._commentsCount = data.comments.length;
+    this._commentsBtn.textContent = this._addCommentsCount();
+  }
+
 
   _onCommentsBtnClick() {
     if (typeof this._onPopupOpen === `function`) {
@@ -88,13 +102,20 @@ export default class MovieCard extends Component {
   }
 
 
+  addElements() {
+    this._commentsBtn = this._element.querySelector(`.film-card__comments`);
+  }
+
   addListeners() {
-    this._element.querySelector(`.film-card__comments`)
-      .addEventListener(`click`, this._onCommentsBtnClick);
+    this._commentsBtn.addEventListener(`click`, this._onCommentsBtnClick);
+  }
+
+
+  removeElements() {
+    this._commentsBtn = null;
   }
 
   removeListeners() {
-    this._element.querySelector(`.film-card__comments`)
-      .removeEventListener(`click`, this._onCommentsBtnClick);
+    this._commentsBtn.removeEventListener(`click`, this._onCommentsBtnClick);
   }
 }

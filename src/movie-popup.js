@@ -1,4 +1,4 @@
-import {EMOJI_LIST, MOVIE_MAX_SCORE} from './const';
+import {KeyCode, EMOJI_LIST, MOVIE_MAX_SCORE} from './const';
 
 import Component from './component';
 
@@ -27,10 +27,28 @@ export default class MoviePopup extends Component {
     this._writers = data.writers;
     this._actors = data.actors;
 
-    this._comments = data.comments;
+    this._comments = data.comments.slice();
+
+
+    this._closeBtn = null;
+    this._form = null;
+
+    this._userRatingOutput = null;
+    this._ratingBtns = null;
+
+    this._commentsCount = null;
+    this._commentsList = null;
+    this._commentField = null;
+
 
     this._onPopupClose = null;
+    this._onRatingChange = null;
+    this._onCommentSend = null;
+
+
     this._onCloseBtnClick = this._onCloseBtnClick.bind(this);
+    this._onRatingBtnClick = this._onRatingBtnClick.bind(this);
+    this._onCommentFieldKeydown = this._onCommentFieldKeydown.bind(this);
   }
 
 
@@ -79,10 +97,8 @@ export default class MoviePopup extends Component {
     return result;
   }
 
-  _addComments() {
-    const comments = this._comments.slice().sort((left, right) => right.date - left.date);
-
-    return comments.map((comment) => `
+  _getCommentMarkup(comment) {
+    return `
       <li class="film-details__comment">
         <span class="film-details__comment-emoji">${comment.emoji}</span>
         <div>
@@ -93,12 +109,20 @@ export default class MoviePopup extends Component {
           </p>
         </div>
       </li>
-    `).join(` `);
+    `;
+  }
+
+  _addComments() {
+    const sortedComments = this._comments.sort((left, right) => left.date - right.date);
+
+    return sortedComments.map((commentData) => this._getCommentMarkup(commentData)).join(` `);
   }
 
   _addEmojiPickers() {
     return Object.keys(EMOJI_LIST).map((emojiName) => `
-      <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-${emojiName}" value="${emojiName}">
+      <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-${emojiName}" value="${emojiName}"
+      ${emojiName === `neutral-face` ? `checked` : ``}
+      >
       <label class="film-details__emoji-label" for="emoji-${emojiName}">${EMOJI_LIST[emojiName]}</label>
     `).join(` `);
   }
@@ -108,7 +132,7 @@ export default class MoviePopup extends Component {
 
     for (let i = 1; i <= MOVIE_MAX_SCORE; i++) {
       scorePickersMarkup += `
-        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="${i}" id="rating-${i}" ${i === Math.ceil(MOVIE_MAX_SCORE / 2) ? `checked` : ``}>
+        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="${i}" id="rating-${i}" ${i === this._userRating ? `checked` : ``}>
         <label class="film-details__user-rating-label" for="rating-${i}">${i}</label>
       `;
     }
@@ -139,7 +163,7 @@ export default class MoviePopup extends Component {
 
                 <div class="film-details__rating">
                   <p class="film-details__total-rating">${this._rating}</p>
-                  <p class="film-details__user-rating">Your rate 8</p>
+                  <p class="film-details__user-rating">Your rate ${this._userRating}</p>
                 </div>
               </div>
 
@@ -192,7 +216,10 @@ export default class MoviePopup extends Component {
           </section>
 
           <section class="film-details__comments-wrap">
-            <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">${this._comments.length}</span></h3>
+            <h3 class="film-details__comments-title">
+              Comments
+              <span class="film-details__comments-count">${this._comments.length}</span>
+            </h3>
 
             <ul class="film-details__comments-list">
               ${this._addComments()}
@@ -245,6 +272,15 @@ export default class MoviePopup extends Component {
     this._onPopupClose = fn;
   }
 
+  set onRatingChange(fn) {
+    this._onRatingChange = fn;
+  }
+
+  set onCommentSend(fn) {
+    this._onCommentSend = fn;
+  }
+
+
   _onCloseBtnClick() {
     if (typeof this._onPopupClose === `function`) {
       this._onPopupClose();
@@ -252,13 +288,112 @@ export default class MoviePopup extends Component {
   }
 
 
+  static createCommentMapper(target) {
+    return {
+      'comment': (value) => {
+        target.text = value;
+      },
+
+      'comment-emoji': (value) => {
+        target.emoji = EMOJI_LIST[value];
+      }
+    };
+  }
+
+  _processCommentData(formData) {
+    const entry = {
+      author: `You`,
+      date: Date.now(),
+      text: ``,
+      emoji: ``
+    };
+
+    const commentMapper = MoviePopup.createCommentMapper(entry);
+
+    for (const pair of formData.entries()) {
+      const [property, value] = pair;
+
+      if (commentMapper[property]) {
+        commentMapper[property](value);
+      }
+    }
+
+    return entry;
+  }
+
+  _addNewComment(newCommentData) {
+    const commentMarkup = this._getCommentMarkup(newCommentData);
+
+    this._comments.push(newCommentData);
+
+    this._commentsList.insertAdjacentHTML(`beforeend`, commentMarkup);
+    this._commentsCount.textContent = this._comments.length;
+  }
+
+  _onCommentFieldKeydown(evt) {
+    if ((evt.ctrlKey || evt.metaKey) && evt.keyCode === KeyCode.ENTER) {
+      const newCommentData = this._processCommentData(new FormData(this._form));
+
+      this._addNewComment(newCommentData);
+      evt.target.value = ``;
+
+      if (typeof this._onPopupClose === `function`) {
+        this._onCommentSend(newCommentData);
+      }
+    }
+  }
+
+
+  _onRatingBtnClick(evt) {
+    this._userRating = +evt.target.value;
+    this._userRatingOutput.textContent = `Your rate ${this._userRating}`;
+
+    if (typeof this._onPopupClose === `function`) {
+      this._onRatingChange(this._userRating);
+    }
+  }
+
+
+  addElements() {
+    this._closeBtn = this._element.querySelector(`.film-details__close-btn`);
+    this._form = this._element.querySelector(`.film-details__inner`);
+
+    this._userRatingOutput = this._element.querySelector(`.film-details__user-rating`);
+    this._ratingBtns = this._element.querySelectorAll(`.film-details__user-rating-input`);
+
+    this._commentsCount = this._element.querySelector(`.film-details__comments-count`);
+    this._commentsList = this._element.querySelector(`.film-details__comments-list`);
+    this._commentField = this._element.querySelector(`.film-details__comment-input`);
+  }
+
   addListeners() {
-    this._element.querySelector(`.film-details__close-btn`)
-      .addEventListener(`click`, this._onCloseBtnClick);
+    this._closeBtn.addEventListener(`click`, this._onCloseBtnClick);
+    this._commentField.addEventListener(`keydown`, this._onCommentFieldKeydown);
+
+    for (const btn of this._ratingBtns) {
+      btn.addEventListener(`click`, this._onRatingBtnClick);
+    }
+  }
+
+
+  removeElements() {
+    this._closeBtn = null;
+    this._form = null;
+
+    this._userRatingOutput = null;
+    this._ratingBtns = null;
+
+    this._commentsCount = null;
+    this._commentsList = null;
+    this._commentField = null;
   }
 
   removeListeners() {
-    this._element.querySelector(`.film-details__close-btn`)
-      .removeEventListener(`click`, this._onCloseBtnClick);
+    this._closeBtn.removeEventListener(`click`, this._onCloseBtnClick);
+    this._commentField.removeEventListener(`keydown`, this._onCommentFieldKeydown);
+
+    for (const btn of this._ratingBtns) {
+      btn.removeEventListener(`click`, this._onRatingBtnClick);
+    }
   }
 }

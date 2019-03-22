@@ -20,20 +20,35 @@ export default class Component {
   }
 
 
+  update() {}
+
+
+  addElements() {}
   addListeners() {}
 
-  removeListeners() {}
-
+  bindComponent() {
+    this.addElements();
+    this.addListeners();
+  }
 
   render() {
     this._element = createElement(this.template);
-    this.addListeners();
+    this.bindComponent();
 
     return this._element;
   }
 
-  unrender() {
+
+  removeListeners() {}
+  removeElements() {}
+
+  unbindComponent() {
     this.removeListeners();
+    this.removeElements();
+  }
+
+  unrender() {
+    this.unbindComponent();
     this._element.remove();
     this._element = null;
   }

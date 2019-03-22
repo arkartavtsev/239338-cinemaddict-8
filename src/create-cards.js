@@ -21,7 +21,16 @@ export default (data, isFull = true, container = mainFilmsContainer) => {
     };
 
     moviePopupComponent.onPopupClose = () => {
+      movieCardComponent.update(movieData);
       moviePopupComponent.unrender();
+    };
+
+    moviePopupComponent.onRatingChange = (newData) => {
+      movieData.userRating = newData;
+    };
+
+    moviePopupComponent.onCommentSend = (newData) => {
+      movieData.comments.push(newData);
     };
 
     fragment.appendChild(movieCardComponent.render());
