@@ -1,3 +1,6 @@
+import * as moment from 'moment';
+import 'moment-duration-format';
+
 import {KeyCode, EMOJI_LIST, MOVIE_MAX_SCORE} from './const';
 
 import Component from './component';
@@ -52,49 +55,10 @@ export default class MoviePopup extends Component {
   }
 
 
-  _addReleaseDate() {
-    const options = {
-      day: `numeric`,
-      month: `long`,
-      year: `numeric`
-    };
-
-    return new Date(this._releaseDate).toLocaleString(`en-GB`, options);
-  }
-
   _addGenres() {
     return this._genres.map((genre) => `
       <span class="film-details__genre">${genre}</span>
     `).join(` `);
-  }
-
-  _addCommentAge(date) {
-    const days = Math.trunc((Date.now() - date) / (24 * 60 * 60 * 1000));
-
-    let months;
-    let years;
-
-    let result;
-
-    if (days) {
-      result = days === 1 ? `a day` : `${days} days`;
-    } else {
-      result = `less a day`;
-    }
-
-    if (days >= 30) {
-      months = Math.trunc(days / 30);
-
-      result = months === 1 ? `a month` : `${months} months`;
-    }
-
-    if (months >= 12) {
-      years = Math.trunc(months / 12);
-
-      result = years === 1 ? `a year` : `${years} years`;
-    }
-
-    return result;
   }
 
   _getCommentMarkup(comment) {
@@ -105,7 +69,7 @@ export default class MoviePopup extends Component {
           <p class="film-details__comment-text">${comment.text}</p>
           <p class="film-details__comment-info">
             <span class="film-details__comment-author">${comment.author}</span>
-            <span class="film-details__comment-day">${this._addCommentAge(comment.date)} ago</span>
+            <span class="film-details__comment-day">${moment(comment.date).toNow(true)} ago</span>
           </p>
         </div>
       </li>
@@ -182,11 +146,11 @@ export default class MoviePopup extends Component {
                 </tr>
                 <tr class="film-details__row">
                   <td class="film-details__term">Release Date</td>
-                  <td class="film-details__cell">${this._addReleaseDate()} (${this._country})</td>
+                  <td class="film-details__cell">${moment(this._releaseDate).format(`D MMMM YYYY`)} (${this._country})</td>
                 </tr>
                 <tr class="film-details__row">
                   <td class="film-details__term">Runtime</td>
-                  <td class="film-details__cell">${this._duration} min</td>
+                  <td class="film-details__cell">${moment.duration(this._duration, `minutes`).format(`m`)} min</td>
                 </tr>
                 <tr class="film-details__row">
                   <td class="film-details__term">Country</td>
