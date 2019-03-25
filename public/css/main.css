@@ -275,7 +275,7 @@ a:hover {
   background-color: transparent;
   background-position: center;
   background-repeat: no-repeat;
-  background-size: auto 40px;
+  background-size: 17px 15px;
   border: none;
   border-right: solid 1px var(--outline-color);
   box-sizing: border-box;
@@ -295,15 +295,27 @@ a:hover {
 }
 
 .film-card__controls-item--add-to-watchlist {
-  background-image: url('../images/icon-watchlist.png');
+  background-image: url('../images/icon-watchlist.svg');
+}
+
+.film-card__controls-item--add-to-watchlist-active {
+  background-image: url('../images/icon-watchlist-active.svg');
 }
 
 .film-card__controls-item--mark-as-watched {
-  background-image: url('../images/icon-watched.png');
+  background-image: url('../images/icon-watched.svg');
+}
+
+.film-card__controls-item--mark-as-watched-active {
+  background-image: url('../images/icon-watched-active.svg');
 }
 
 .film-card__controls-item--favorite {
-  background-image: url('../images/icon-favorite.png');
+  background-image: url('../images/icon-favorite.svg');
+}
+
+.film-card__controls-item--favorite-active {
+  background-image: url('../images/icon-favorite-active.svg');
 }
 
 
