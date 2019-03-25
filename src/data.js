@@ -1,5 +1,5 @@
 import {EMOJI_LIST, MOVIE_MAX_SCORE} from './const';
-import {getRandomNum, getRandomItem, getUniqueRandomItems} from './util';
+import {getRandomNum, getRandomBoolean, getRandomItem, getUniqueRandomItems} from './util';
 
 
 const Properties = {
@@ -174,7 +174,11 @@ const generateMovieInfo = (properties) => {
     description: getRandomText(properties.TextContent),
     posterUrl: `images/posters/${getRandomItem(properties.POSTERS_NAMES)}.jpg`,
 
-    comments: generateItems(getRandomNum(properties.Comments.Count.MIN, properties.Comments.Count.MAX), generateComment)
+    comments: generateItems(getRandomNum(properties.Comments.Count.MIN, properties.Comments.Count.MAX), generateComment),
+
+    isInWatchlist: getRandomBoolean(),
+    isWatched: getRandomBoolean(),
+    isFavorite: getRandomBoolean()
   };
 };
 

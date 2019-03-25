@@ -33,11 +33,22 @@ export default class MoviePopup extends Component {
     this._comments = data.comments.slice();
 
 
+    this._state = {
+      isInWatchlist: data.isInWatchlist,
+      isWatched: data.isWatched,
+      isFavorite: data.isFavorite
+    };
+
+
     this._closeBtn = null;
     this._form = null;
 
     this._userRatingOutput = null;
     this._ratingBtns = null;
+
+    this._addToWatchlistBtn = null;
+    this._markAsWatchedBtn = null;
+    this._addToFavoritesBtn = null;
 
     this._commentsCount = null;
     this._commentsList = null;
@@ -48,10 +59,18 @@ export default class MoviePopup extends Component {
     this._onRatingChange = null;
     this._onCommentSend = null;
 
+    this._onAddToWatchList = null;
+    this._onMarkAsWatched = null;
+    this._onAddToFavorites = null;
+
 
     this._onCloseBtnClick = this._onCloseBtnClick.bind(this);
     this._onRatingBtnClick = this._onRatingBtnClick.bind(this);
     this._onCommentFieldKeydown = this._onCommentFieldKeydown.bind(this);
+
+    this._onAddToWatchlistBtnClick = this._onAddToWatchlistBtnClick.bind(this);
+    this._onMarkAsWatchedBtnClick = this._onMarkAsWatchedBtnClick.bind(this);
+    this._onAddToFavoritesBtnClick = this._onAddToFavoritesBtnClick.bind(this);
   }
 
 
@@ -169,13 +188,19 @@ export default class MoviePopup extends Component {
           </div>
 
           <section class="film-details__controls">
-            <input type="checkbox" class="film-details__control-input visually-hidden" id="watchlist" name="watchlist">
+            <input type="checkbox" class="film-details__control-input visually-hidden" id="watchlist" name="watchlist"
+            ${this._state.isInWatchlist ? `checked` : ``}
+            >
             <label for="watchlist" class="film-details__control-label film-details__control-label--watchlist">Add to watchlist</label>
 
-            <input type="checkbox" class="film-details__control-input visually-hidden" id="watched" name="watched" checked>
+            <input type="checkbox" class="film-details__control-input visually-hidden" id="watched" name="watched"
+            ${this._state.isWatched ? `checked` : ``}
+            >
             <label for="watched" class="film-details__control-label film-details__control-label--watched">Already watched</label>
 
-            <input type="checkbox" class="film-details__control-input visually-hidden" id="favorite" name="favorite">
+            <input type="checkbox" class="film-details__control-input visually-hidden" id="favorite" name="favorite"
+            ${this._state.isFavorite ? `checked` : ``}
+            >
             <label for="favorite" class="film-details__control-label film-details__control-label--favorite">Add to favorites</label>
           </section>
 
@@ -244,10 +269,38 @@ export default class MoviePopup extends Component {
     this._onCommentSend = fn;
   }
 
+  set onAddToWatchList(fn) {
+    this._onAddToWatchList = fn;
+  }
+
+  set onMarkAsWatched(fn) {
+    this._onMarkAsWatched = fn;
+  }
+
+  set onAddToFavorites(fn) {
+    this._onAddToFavorites = fn;
+  }
+
+
+  update(data) {
+    this._state.isInWatchlist = data.isInWatchlist;
+    this._state.isWatched = data.isWatched;
+    this._state.isFavorite = data.isFavorite;
+  }
+
 
   _onCloseBtnClick() {
+    const updatedData = {
+      isInWatchlist: this._state.isInWatchlist,
+      isWatched: this._state.isWatched,
+      isFavorite: this._state.isFavorite,
+
+      userRating: this._userRating,
+      comments: this._comments
+    };
+
     if (typeof this._onPopupClose === `function`) {
-      this._onPopupClose();
+      this._onPopupClose(updatedData);
     }
   }
 
@@ -318,12 +371,41 @@ export default class MoviePopup extends Component {
   }
 
 
+  _onAddToWatchlistBtnClick() {
+    this._state.isInWatchlist = !this._state.isInWatchlist;
+
+    if (typeof this._onAddToWatchList === `function`) {
+      this._onAddToWatchList(this._state.isInWatchlist);
+    }
+  }
+
+  _onMarkAsWatchedBtnClick() {
+    this._state.isWatched = !this._state.isWatched;
+
+    if (typeof this._onMarkAsWatched === `function`) {
+      this._onMarkAsWatched(this._state.isWatched);
+    }
+  }
+
+  _onAddToFavoritesBtnClick() {
+    this._state.isFavorite = !this._state.isFavorite;
+
+    if (typeof this._onAddToFavorites === `function`) {
+      this._onAddToFavorites(this._state.isFavorite);
+    }
+  }
+
+
   addElements() {
     this._closeBtn = this._element.querySelector(`.film-details__close-btn`);
     this._form = this._element.querySelector(`.film-details__inner`);
 
     this._userRatingOutput = this._element.querySelector(`.film-details__user-rating`);
     this._ratingBtns = this._element.querySelectorAll(`.film-details__user-rating-input`);
+
+    this._addToWatchlistBtn = this._element.querySelector(`#watchlist`);
+    this._markAsWatchedBtn = this._element.querySelector(`#watched`);
+    this._addToFavoritesBtn = this._element.querySelector(`#favorite`);
 
     this._commentsCount = this._element.querySelector(`.film-details__comments-count`);
     this._commentsList = this._element.querySelector(`.film-details__comments-list`);
@@ -333,6 +415,10 @@ export default class MoviePopup extends Component {
   addListeners() {
     this._closeBtn.addEventListener(`click`, this._onCloseBtnClick);
     this._commentField.addEventListener(`keydown`, this._onCommentFieldKeydown);
+
+    this._addToWatchlistBtn.addEventListener(`click`, this._onAddToWatchlistBtnClick);
+    this._markAsWatchedBtn.addEventListener(`click`, this._onMarkAsWatchedBtnClick);
+    this._addToFavoritesBtn.addEventListener(`click`, this._onAddToFavoritesBtnClick);
 
     for (const btn of this._ratingBtns) {
       btn.addEventListener(`click`, this._onRatingBtnClick);
@@ -347,6 +433,10 @@ export default class MoviePopup extends Component {
     this._userRatingOutput = null;
     this._ratingBtns = null;
 
+    this._addToWatchlistBtn = null;
+    this._markAsWatchedBtn = null;
+    this._addToFavoritesBtn = null;
+
     this._commentsCount = null;
     this._commentsList = null;
     this._commentField = null;
@@ -355,6 +445,10 @@ export default class MoviePopup extends Component {
   removeListeners() {
     this._closeBtn.removeEventListener(`click`, this._onCloseBtnClick);
     this._commentField.removeEventListener(`keydown`, this._onCommentFieldKeydown);
+
+    this._addToWatchlistBtn.removeEventListener(`click`, this._onAddToWatchlistBtnClick);
+    this._markAsWatchedBtn.removeEventListener(`click`, this._onMarkAsWatchedBtnClick);
+    this._addToFavoritesBtn.removeEventListener(`click`, this._onAddToFavoritesBtnClick);
 
     for (const btn of this._ratingBtns) {
       btn.removeEventListener(`click`, this._onRatingBtnClick);
