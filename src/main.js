@@ -6,10 +6,15 @@ import getData from './data';
 import Filter from './filter';
 
 import createCards from './create-cards';
+import showStatistics from './show-statistics';
 
 
 const filtersContainer = document.querySelector(`.main-navigation`);
+const statsBtn = document.querySelector(`.main-navigation__item--additional`);
+
+const films = document.querySelector(`.films`);
 const extraFilmsContainers = document.querySelectorAll(`.films-list--extra .films-list__container`);
+const statistic = document.querySelector(`.statistic`);
 
 
 const moviesData = getData(getRandomNum(MoviesCount.Main.MIN, MoviesCount.Main.MAX));
@@ -63,6 +68,9 @@ const createFilters = (container) => {
 
         createCards(filteredCards);
       }
+
+      films.classList.remove(`visually-hidden`);
+      statistic.classList.add(`visually-hidden`);
     };
 
     fragment.append(filterComponent.render());
@@ -84,3 +92,26 @@ createCards(moviesData);
 for (const container of extraFilmsContainers) {
   createCards(getData(MoviesCount.EXTRA), false, container);
 }
+
+
+// показ статистики
+
+
+const onStatsBtnClick = (evt) => {
+  evt.preventDefault();
+
+  films.classList.add(`visually-hidden`);
+  statistic.classList.remove(`visually-hidden`);
+
+  const currentActive = evt.currentTarget.parentElement.querySelector(`.main-navigation__item--active`);
+
+  if (currentActive && currentActive !== evt.currentTarget) {
+    currentActive.classList.remove(`main-navigation__item--active`);
+    evt.currentTarget.classList.add(`main-navigation__item--active`);
+
+    showStatistics(moviesData);
+  }
+};
+
+
+statsBtn.addEventListener(`click`, onStatsBtnClick);
