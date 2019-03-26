@@ -3,25 +3,25 @@ export const KeyCode = {
 };
 
 
-export const Filters = {
-  NAMES: [
-    `Watchlist`,
-    `History`,
-    `Favorites`
-  ],
-  Count: {
-    MIN: 1,
-    MAX: 5
-  }
+export const FILTERS = [
+  `All movies`,
+  `Watchlist`,
+  `History`,
+  `Favorites`
+];
+
+export const MoviesCount = {
+  Main: {
+    MIN: 5,
+    MAX: 15
+  },
+  EXTRA: 2
 };
+
+export const MOVIE_MAX_SCORE = 10;
 
 export const EMOJI_LIST = {
   'sleeping': `&#x1F634`,
   'neutral-face': `&#x1F610`,
   'grinning': `&#x1F600`
 };
-
-
-export const EXTRA_FILMS_COUNT = 2;
-
-export const MOVIE_MAX_SCORE = 10;

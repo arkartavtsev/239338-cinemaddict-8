@@ -1,8 +1,10 @@
-import {EXTRA_FILMS_COUNT} from './const';
+import {MoviesCount, FILTERS} from './const';
+import {getRandomNum} from './util';
 
 import getData from './data';
 
-import createFilters from './create-filters';
+import Filter from './filter';
+
 import createCards from './create-cards';
 
 
@@ -10,7 +12,27 @@ const filtersContainer = document.querySelector(`.main-navigation`);
 const extraFilmsContainers = document.querySelectorAll(`.films-list--extra .films-list__container`);
 
 
-// создание фильтров
+const moviesData = getData(getRandomNum(MoviesCount.Main.MIN, MoviesCount.Main.MAX));
+
+
+// фильтры
+
+
+const filterMovies = (movies, filtrationType) => {
+  switch (filtrationType) {
+    case `watchlist`:
+      return movies.filter((item) => item.isInWatchlist);
+
+    case `history`:
+      return movies.filter((item) => item.isWatched);
+
+    case `favorites`:
+      return movies.filter((item) => item.isFavorite);
+
+    default:
+      return movies;
+  }
+};
 
 
 const deleteExistingFilters = () => {
@@ -22,37 +44,43 @@ const deleteExistingFilters = () => {
 };
 
 
-const onFilterClick = (evt) => {
-  evt.preventDefault();
+const createFilters = (container) => {
+  const fragment = document.createDocumentFragment();
 
-  const currentActive = evt.currentTarget.parentElement.querySelector(`.main-navigation__item--active`);
+  for (const filterName of FILTERS) {
+    const filterComponent = new Filter(filterName);
 
-  if (currentActive && currentActive !== evt.currentTarget) {
-    currentActive.classList.remove(`main-navigation__item--active`);
-    evt.currentTarget.classList.add(`main-navigation__item--active`);
+    filterComponent.isMain = filterName === `All movies`;
 
-    createCards(getData(evt.currentTarget.dataset.count));
+    filterComponent.onFilter = (evt, filterType) => {
+      const currentActive = evt.currentTarget.parentElement.querySelector(`.main-navigation__item--active`);
+
+      if (currentActive && currentActive !== evt.currentTarget) {
+        currentActive.classList.remove(`main-navigation__item--active`);
+        evt.currentTarget.classList.add(`main-navigation__item--active`);
+
+        const filteredCards = filterMovies(moviesData, filterType);
+
+        createCards(filteredCards);
+      }
+    };
+
+    fragment.append(filterComponent.render());
   }
+
+  container.prepend(fragment);
 };
 
 
 deleteExistingFilters();
 createFilters(filtersContainer);
 
-const filters = filtersContainer.querySelectorAll(`.main-navigation__item:not(.main-navigation__item--additional`);
 
-for (const filter of filters) {
-  filter.addEventListener(`click`, onFilterClick);
-}
+// первоначальная отрисовка карточек
 
 
-// создание карточек
-
-
-const activeFilter = filtersContainer.querySelector(`.main-navigation__item--active`);
-
-createCards(getData(activeFilter.dataset.count));
+createCards(moviesData);
 
 for (const container of extraFilmsContainers) {
-  createCards(getData(EXTRA_FILMS_COUNT), false, container);
+  createCards(getData(MoviesCount.EXTRA), false, container);
 }

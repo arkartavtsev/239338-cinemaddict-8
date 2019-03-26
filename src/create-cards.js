@@ -36,14 +36,26 @@ export default (data, isFull = true, container = mainFilmsContainer) => {
 
     movieCardComponent.onAddToWatchList = (newData) => {
       movieData.isInWatchlist = newData;
+
+      if (document.querySelector(`.main-navigation__item--active`).dataset.type === `watchlist`) {
+        movieCardComponent.unrender();
+      }
     };
 
     movieCardComponent.onMarkAsWatched = (newData) => {
       movieData.isWatched = newData;
+
+      if (document.querySelector(`.main-navigation__item--active`).dataset.type === `history`) {
+        movieCardComponent.unrender();
+      }
     };
 
     movieCardComponent.onAddToFavorites = (newData) => {
       movieData.isFavorite = newData;
+
+      if (document.querySelector(`.main-navigation__item--active`).dataset.type === `favorites`) {
+        movieCardComponent.unrender();
+      }
     };
 
 
@@ -64,14 +76,26 @@ export default (data, isFull = true, container = mainFilmsContainer) => {
 
     moviePopupComponent.onAddToWatchList = (newData) => {
       movieData.isInWatchlist = newData;
+
+      if (document.querySelector(`.main-navigation__item--active`).dataset.type === `watchlist`) {
+        movieCardComponent.unrender();
+      }
     };
 
     moviePopupComponent.onMarkAsWatched = (newData) => {
       movieData.isWatched = newData;
+
+      if (document.querySelector(`.main-navigation__item--active`).dataset.type === `history`) {
+        movieCardComponent.unrender();
+      }
     };
 
     moviePopupComponent.onAddToFavorites = (newData) => {
       movieData.isFavorite = newData;
+
+      if (document.querySelector(`.main-navigation__item--active`).dataset.type === `favorites`) {
+        movieCardComponent.unrender();
+      }
     };
 
 
