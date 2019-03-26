@@ -47,8 +47,6 @@ export default class Filter extends Component {
 
 
   _onFilterClick(evt) {
-    evt.preventDefault();
-
     if (typeof this._onFilter === `function`) {
       this._onFilter(evt, this._type);
     }

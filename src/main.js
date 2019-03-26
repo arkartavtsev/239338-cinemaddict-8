@@ -9,12 +9,24 @@ import createCards from './create-cards';
 import showStatistics from './show-statistics';
 
 
-const filtersContainer = document.querySelector(`.main-navigation`);
-const statsBtn = document.querySelector(`.main-navigation__item--additional`);
+const mainNav = document.querySelector(`.main-navigation`);
+let activeNavItem;
 
 const films = document.querySelector(`.films`);
-const extraFilmsContainers = document.querySelectorAll(`.films-list--extra .films-list__container`);
+const extraFilmsContainers = films.querySelectorAll(`.films-list--extra .films-list__container`);
+
 const statistic = document.querySelector(`.statistic`);
+
+
+const toggleActiveNavItem = (evt) => {
+  if (activeNavItem) {
+    activeNavItem.classList.remove(`main-navigation__item--active`);
+  }
+
+  evt.currentTarget.classList.add(`main-navigation__item--active`);
+
+  activeNavItem = evt.currentTarget;
+};
 
 
 const moviesData = getData(getRandomNum(MoviesCount.Main.MIN, MoviesCount.Main.MAX));
@@ -41,7 +53,7 @@ const filterMovies = (movies, filtrationType) => {
 
 
 const deleteExistingFilters = () => {
-  const existingFilters = filtersContainer.querySelectorAll(`.main-navigation__item:not(.main-navigation__item--additional)`);
+  const existingFilters = mainNav.querySelectorAll(`.main-navigation__item:not(.main-navigation__item--additional)`);
 
   for (const filter of existingFilters) {
     filter.remove();
@@ -58,19 +70,20 @@ const createFilters = (container) => {
     filterComponent.isMain = filterName === `All movies`;
 
     filterComponent.onFilter = (evt, filterType) => {
-      const currentActive = evt.currentTarget.parentElement.querySelector(`.main-navigation__item--active`);
+      evt.preventDefault();
 
-      if (currentActive && currentActive !== evt.currentTarget) {
-        currentActive.classList.remove(`main-navigation__item--active`);
-        evt.currentTarget.classList.add(`main-navigation__item--active`);
+      if (evt.currentTarget !== activeNavItem) {
+        toggleActiveNavItem(evt);
 
         const filteredCards = filterMovies(moviesData, filterType);
 
         createCards(filteredCards);
       }
 
-      films.classList.remove(`visually-hidden`);
-      statistic.classList.add(`visually-hidden`);
+      if (films.classList.contains(`visually-hidden`)) {
+        films.classList.remove(`visually-hidden`);
+        statistic.classList.add(`visually-hidden`);
+      }
     };
 
     fragment.append(filterComponent.render());
@@ -81,7 +94,9 @@ const createFilters = (container) => {
 
 
 deleteExistingFilters();
-createFilters(filtersContainer);
+createFilters(mainNav);
+
+activeNavItem = mainNav.querySelector(`.main-navigation__item--active`);
 
 
 // первоначальная отрисовка карточек
@@ -97,21 +112,20 @@ for (const container of extraFilmsContainers) {
 // показ статистики
 
 
+const statsBtn = mainNav.querySelector(`.main-navigation__item--additional`);
+
 const onStatsBtnClick = (evt) => {
   evt.preventDefault();
 
-  films.classList.add(`visually-hidden`);
-  statistic.classList.remove(`visually-hidden`);
-
-  const currentActive = evt.currentTarget.parentElement.querySelector(`.main-navigation__item--active`);
-
-  if (currentActive && currentActive !== evt.currentTarget) {
-    currentActive.classList.remove(`main-navigation__item--active`);
-    evt.currentTarget.classList.add(`main-navigation__item--active`);
-
+  if (evt.currentTarget !== activeNavItem) {
+    toggleActiveNavItem(evt);
     showStatistics(moviesData);
   }
-};
 
+  if (statistic.classList.contains(`visually-hidden`)) {
+    statistic.classList.remove(`visually-hidden`);
+    films.classList.add(`visually-hidden`);
+  }
+};
 
 statsBtn.addEventListener(`click`, onStatsBtnClick);
