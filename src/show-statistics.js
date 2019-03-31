@@ -3,6 +3,12 @@ import * as moment from 'moment';
 import {showMessage} from './util';
 import renderChart from './render-chart';
 
+
+const BAR_HEIGHT = 50;
+
+let chart;
+
+
 const statistic = document.querySelector(`.statistic`);
 const summary = statistic.querySelector(`.statistic__text-list`);
 const chartCanvas = statistic.querySelector(`.statistic__chart`);
@@ -13,7 +19,7 @@ const renderStatisticSummary = (stats) => `
     <h4 class="statistic__item-title">You watched</h4>
     <p class="statistic__item-text">
       ${stats.watchedCount}
-      <span class="statistic__item-description">movies</span>
+      <span class="statistic__item-description">${stats.watchedCount === 1 ? `movie` : `movies`}</span>
     </p>
   </li>
   <li class="statistic__text-item">
@@ -60,7 +66,12 @@ export default (data) => {
 
   summary.innerHTML = renderStatisticSummary(stats);
 
+  if (chart) {
+    chart.destroy();
+  }
+
   if (stats.countedGenres.length) {
-    renderChart(chartCanvas, stats.countedGenres);
+    chartCanvas.height = BAR_HEIGHT * stats.countedGenres.length;
+    chart = renderChart(chartCanvas, stats.countedGenres);
   }
 };
