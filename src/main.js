@@ -17,6 +17,7 @@ const topRatedFilmsList = films.querySelector(`.films-list--top-rated .films-lis
 const mostCommentedFilmsList = films.querySelector(`.films-list--most-commented .films-list__container`);
 
 const statistic = document.querySelector(`.statistic`);
+const totalMoviesCounter = document.querySelector(`.footer__statistics p`);
 
 
 const toggleActiveNavItem = (evt) => {
@@ -86,6 +87,8 @@ activeNavItem = mainNav.querySelector(`.main-navigation__item--active`);
 
 loadMovies(mainFilmsList)
   .then((movies) => {
+    totalMoviesCounter.textContent = `${movies.length} movies inside`;
+
     updateMoviesList(movies, `all`, mainFilmsList);
     updateMoviesList(movies, `top-rated`, topRatedFilmsList, true);
     updateMoviesList(movies, `most-commented`, mostCommentedFilmsList, true);
