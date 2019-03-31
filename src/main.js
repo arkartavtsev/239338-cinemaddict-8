@@ -56,7 +56,10 @@ const createFilters = (container) => {
       if (evt.currentTarget !== activeNavItem) {
         toggleActiveNavItem(evt);
 
-        updateMoviesList(filterType, mainFilmsList);
+        loadMovies(mainFilmsList)
+          .then((movies) => {
+            updateMoviesList(movies, filterType);
+          });
       }
 
       if (films.classList.contains(`visually-hidden`)) {
@@ -78,12 +81,15 @@ createFilters(mainNav);
 activeNavItem = mainNav.querySelector(`.main-navigation__item--active`);
 
 
-// первоначальная отрисовка карточек
+// первоначальная загрузка фильмов
 
 
-updateMoviesList(`all`, mainFilmsList);
-updateMoviesList(`top-rated`, topRatedFilmsList, true);
-updateMoviesList(`most-commented`, mostCommentedFilmsList, true);
+loadMovies(mainFilmsList)
+  .then((movies) => {
+    updateMoviesList(movies, `all`, mainFilmsList);
+    updateMoviesList(movies, `top-rated`, topRatedFilmsList, true);
+    updateMoviesList(movies, `most-commented`, mostCommentedFilmsList, true);
+  });
 
 
 // показ статистики

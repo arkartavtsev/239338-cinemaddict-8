@@ -36,7 +36,7 @@ const selectMoviesByCriterion = (movies, criterion) => {
 };
 
 
-const createCards = (data, isExtra, container = mainFilmsList) => {
+const createCards = (data, container, isExtra) => {
   const fragment = document.createDocumentFragment();
   const activeFilterType = document.querySelector(`.main-navigation__item--active`).dataset.type;
 
@@ -70,7 +70,10 @@ const createCards = (data, isExtra, container = mainFilmsList) => {
 
       api.updateMovie(movieData.id, movieData.toRAW())
       .then(() => {
-        updateMoviesList(activeFilterType, mainFilmsList);
+        loadMovies(mainFilmsList)
+          .then((movies) => {
+            updateMoviesList(movies, activeFilterType);
+          });
       })
       .catch(() => {
         movieData[stateName] = !stateValue;
@@ -80,9 +83,12 @@ const createCards = (data, isExtra, container = mainFilmsList) => {
 
 
     moviePopupComponent.onPopupClose = () => {
-      updateMoviesList(activeFilterType, mainFilmsList);
-      updateMoviesList(`top-rated`, topRatedFilmsList, true);
-      updateMoviesList(`most-commented`, mostCommentedFilmsList, true);
+      loadMovies(mainFilmsList)
+        .then((movies) => {
+          updateMoviesList(movies, activeFilterType);
+          updateMoviesList(movies, `top-rated`, topRatedFilmsList, true);
+          updateMoviesList(movies, `most-commented`, mostCommentedFilmsList, true);
+        });
 
       moviePopupComponent.unrender();
     };
@@ -141,25 +147,22 @@ const createCards = (data, isExtra, container = mainFilmsList) => {
 };
 
 
-const updateMoviesList = (criterion, moviesList, isExtra = false) => {
+const updateMoviesList = (movies, criterion, moviesList = mainFilmsList, isExtra = false) => {
   moviesList.innerHTML = ``;
 
-  if (!filtersCounters) {
+  if (!isExtra && !filtersCounters) {
     filtersCounters = document.querySelectorAll(`.main-navigation__item-count`);
   }
 
-  loadMovies(moviesList)
-    .then((movies) => {
-      if (!isExtra) {
-        for (const counter of filtersCounters) {
-          counter.textContent = selectMoviesByCriterion(movies, counter.parentElement.dataset.type).length;
-        }
-      }
+  if (!isExtra) {
+    for (const counter of filtersCounters) {
+      counter.textContent = selectMoviesByCriterion(movies, counter.parentElement.dataset.type).length;
+    }
+  }
 
-      const moviesToShow = selectMoviesByCriterion(movies, criterion);
+  const moviesToShow = selectMoviesByCriterion(movies, criterion);
 
-      createCards(moviesToShow, isExtra, moviesList);
-    });
+  createCards(moviesToShow, moviesList, isExtra);
 };
 
 
