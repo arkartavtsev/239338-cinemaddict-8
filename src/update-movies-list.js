@@ -10,6 +10,8 @@ const mainFilmsList = document.querySelector(`.films-list .films-list__container
 const topRatedFilmsList = document.querySelector(`.films-list--top-rated .films-list__container`);
 const mostCommentedFilmsList = document.querySelector(`.films-list--most-commented .films-list__container`);
 
+let filtersCounters;
+
 
 const selectMoviesByCriterion = (movies, criterion) => {
   switch (criterion) {
@@ -36,6 +38,7 @@ const selectMoviesByCriterion = (movies, criterion) => {
 
 const createCards = (data, isExtra, container = mainFilmsList) => {
   const fragment = document.createDocumentFragment();
+  const activeFilterType = document.querySelector(`.main-navigation__item--active`).dataset.type;
 
   container.innerHTML = ``;
 
@@ -48,8 +51,6 @@ const createCards = (data, isExtra, container = mainFilmsList) => {
   for (const movieData of data) {
     const movieCardComponent = new MovieCard(movieData);
     const moviePopupComponent = new MoviePopup(movieData);
-
-    const activeFilterType = document.querySelector(`.main-navigation__item--active`).dataset.type;
 
 
     movieCardComponent.isFull = !isExtra;
@@ -143,8 +144,18 @@ const createCards = (data, isExtra, container = mainFilmsList) => {
 const updateMoviesList = (criterion, moviesList, isExtra = false) => {
   moviesList.innerHTML = ``;
 
+  if (!filtersCounters) {
+    filtersCounters = document.querySelectorAll(`.main-navigation__item-count`);
+  }
+
   loadMovies(moviesList)
     .then((movies) => {
+      if (!isExtra) {
+        for (const counter of filtersCounters) {
+          counter.textContent = selectMoviesByCriterion(movies, counter.parentElement.dataset.type).length;
+        }
+      }
+
       const moviesToShow = selectMoviesByCriterion(movies, criterion);
 
       createCards(moviesToShow, isExtra, moviesList);
