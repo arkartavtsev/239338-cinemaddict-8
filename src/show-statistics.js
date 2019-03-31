@@ -1,4 +1,6 @@
 import * as moment from 'moment';
+
+import {showMessage} from './util';
 import renderChart from './render-chart';
 
 const statistic = document.querySelector(`.statistic`);
@@ -24,13 +26,19 @@ const renderStatisticSummary = (stats) => `
   </li>
   <li class="statistic__text-item">
     <h4 class="statistic__item-title">Top genre</h4>
-    <p class="statistic__item-text">${stats.countedGenres.sort((left, right) => right[1] - left[1])[0][0]}</p>
+    <p class="statistic__item-text">${stats.countedGenres.length ? stats.countedGenres.sort((left, right) => right[1] - left[1])[0][0] : `&#8212;`}</p>
   </li>
 `;
 
 
 export default (data) => {
   const watchedMovies = data.filter((item) => item.isWatched);
+
+  if (!watchedMovies.length) {
+    showMessage(`There is a lack of data to show statistic. Mark some movies as watched.`, statistic);
+
+    return;
+  }
 
   const genres = watchedMovies.reduce((acc, item) => {
     acc.push(...item.genres);
@@ -51,5 +59,8 @@ export default (data) => {
 
 
   summary.innerHTML = renderStatisticSummary(stats);
-  renderChart(chartCanvas, stats.countedGenres);
+
+  if (stats.countedGenres.length) {
+    renderChart(chartCanvas, stats.countedGenres);
+  }
 };

@@ -17,6 +17,33 @@
 }
 
 
+@keyframes shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+      transform: translateX(-5px);
+    }
+
+    20%,
+    40%,
+    60%,
+    80% {
+      transform: translateX(5px);
+    }
+}
+
+.shake {
+  animation: shake 0.6s;
+}
+
+
 html {
   background: #121213 url('../images/background.png') no-repeat 50% 0;
   display: flex;
@@ -240,6 +267,10 @@ a:hover {
   padding-right: 30px;
 }
 
+.film-card__description::first-letter {
+  text-transform: capitalize;
+}
+
 .film-card__comments {
   background: none;
   border: 0;
@@ -298,24 +329,36 @@ a:hover {
   background-image: url('../images/icon-watchlist.svg');
 }
 
-.film-card__controls-item--add-to-watchlist-active {
+.film-card__controls-item--active.film-card__controls-item--add-to-watchlist {
   background-image: url('../images/icon-watchlist-active.svg');
+}
+
+.film-card__controls-item--error.film-card__controls-item--add-to-watchlist {
+  background-image: url('../images/icon-watchlist-error.svg');
 }
 
 .film-card__controls-item--mark-as-watched {
   background-image: url('../images/icon-watched.svg');
 }
 
-.film-card__controls-item--mark-as-watched-active {
+.film-card__controls-item--active.film-card__controls-item--mark-as-watched {
   background-image: url('../images/icon-watched-active.svg');
+}
+
+.film-card__controls-item--error.film-card__controls-item--mark-as-watched {
+  background-image: url('../images/icon-watched-error.svg');
 }
 
 .film-card__controls-item--favorite {
   background-image: url('../images/icon-favorite.svg');
 }
 
-.film-card__controls-item--favorite-active {
+.film-card__controls-item--active.film-card__controls-item--favorite {
   background-image: url('../images/icon-favorite-active.svg');
+}
+
+.film-card__controls-item--error.film-card__controls-item--favorite {
+  background-image: url('../images/icon-favorite-error.svg');
 }
 
 
@@ -525,6 +568,9 @@ a:hover {
   font-weight: 600;
   line-height: 1.57;
   margin: 0;
+}
+.film-details__film-description::first-letter {
+  text-transform: capitalize;
 }
 .film-details__age {
   font-size: 21px;
@@ -852,4 +898,9 @@ a:hover {
 .statistic__chart-wrap {
   margin-left: 30px;
   width: 1000px;
+}
+
+.load-msg {
+  width: 100%;
+  font-size: 20px;
 }
