@@ -1,10 +1,8 @@
 import {FILTERS} from './const';
-import {hideMessage} from './util';
-import {loadMovies} from './backend';
 
 import Filter from './filter';
 
-import {updateMoviesList} from './update-movies-list';
+import {moviesStore, updateMoviesList} from './movies';
 import showStatistics from './show-statistics';
 
 
@@ -12,12 +10,7 @@ const mainNav = document.querySelector(`.main-navigation`);
 let activeNavItem;
 
 const films = document.querySelector(`.films`);
-const mainFilmsList = films.querySelector(`.films-list .films-list__container`);
-const topRatedFilmsList = films.querySelector(`.films-list--top-rated .films-list__container`);
-const mostCommentedFilmsList = films.querySelector(`.films-list--most-commented .films-list__container`);
-
 const statistic = document.querySelector(`.statistic`);
-const totalMoviesCounter = document.querySelector(`.footer__statistics p`);
 
 
 const toggleActiveNavItem = (evt) => {
@@ -57,10 +50,7 @@ const createFilters = (container) => {
       if (evt.currentTarget !== activeNavItem) {
         toggleActiveNavItem(evt);
 
-        loadMovies(mainFilmsList)
-          .then((movies) => {
-            updateMoviesList(movies, filterType);
-          });
+        updateMoviesList(moviesStore, filterType);
       }
 
       if (films.classList.contains(`visually-hidden`)) {
@@ -82,19 +72,6 @@ createFilters(mainNav);
 activeNavItem = mainNav.querySelector(`.main-navigation__item--active`);
 
 
-// первоначальная загрузка фильмов
-
-
-loadMovies(mainFilmsList)
-  .then((movies) => {
-    totalMoviesCounter.textContent = `${movies.length} movies inside`;
-
-    updateMoviesList(movies, `all`, mainFilmsList);
-    updateMoviesList(movies, `top-rated`, topRatedFilmsList, true);
-    updateMoviesList(movies, `most-commented`, mostCommentedFilmsList, true);
-  });
-
-
 // показ статистики
 
 
@@ -106,11 +83,7 @@ const onStatsBtnClick = (evt) => {
   if (evt.currentTarget !== activeNavItem) {
     toggleActiveNavItem(evt);
 
-    loadMovies(statistic)
-      .then((movies) => {
-        hideMessage(statistic);
-        showStatistics(movies);
-      });
+    showStatistics(moviesStore);
   }
 
   if (statistic.classList.contains(`visually-hidden`)) {

@@ -1,6 +1,6 @@
 import * as moment from 'moment';
 
-import {showMessage} from './util';
+import {hideMessage, showMessage} from './util';
 import renderChart from './render-chart';
 
 
@@ -37,10 +37,21 @@ const renderStatisticSummary = (stats) => `
 `;
 
 
+const restoreStatisticView = () => {
+  hideMessage(statistic);
+  summary.innerHTML = ``;
+
+  if (chart) {
+    chart.destroy();
+  }
+};
+
+
 export default (data) => {
   const watchedMovies = data.filter((item) => item.isWatched);
 
   if (!watchedMovies.length) {
+    restoreStatisticView();
     showMessage(`There is a lack of data to show statistic. Mark some movies as watched.`, statistic);
 
     return;
@@ -64,11 +75,8 @@ export default (data) => {
   };
 
 
+  restoreStatisticView();
   summary.innerHTML = renderStatisticSummary(stats);
-
-  if (chart) {
-    chart.destroy();
-  }
 
   if (stats.countedGenres.length) {
     chartCanvas.height = BAR_HEIGHT * stats.countedGenres.length;

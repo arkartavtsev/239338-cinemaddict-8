@@ -58,16 +58,21 @@ export default class MoviePopup extends Component {
     this._commentField = null;
     this._addEmojiBtn = null;
 
+    this._commentUndoBtnWrapper = null;
+    this._commentUndoBtn = null;
+
 
     this._onPopupClose = null;
     this._onRatingChange = null;
     this._onCommentSend = null;
+    this._onCommentUndo = null;
     this._onListControlToggle = null;
 
 
     this._onCloseBtnClick = this._onCloseBtnClick.bind(this);
     this._onRatingBtnClick = this._onRatingBtnClick.bind(this);
     this._onCommentFieldKeydown = this._onCommentFieldKeydown.bind(this);
+    this._onCommentUndoBtnClick = this._onCommentUndoBtnClick.bind(this);
 
     this._onAddToWatchlistBtnClick = this._onAddToWatchlistBtnClick.bind(this);
     this._onMarkAsWatchedBtnClick = this._onMarkAsWatchedBtnClick.bind(this);
@@ -235,7 +240,7 @@ export default class MoviePopup extends Component {
           </section>
 
           <section class="film-details__user-rating-wrap">
-            <div class="film-details__user-rating-controls">
+            <div class="film-details__user-rating-controls visually-hidden">
               <span class="film-details__watched-status film-details__watched-status--active">Already watched</span>
               <button class="film-details__watched-reset" type="button">undo</button>
             </div>
@@ -274,6 +279,10 @@ export default class MoviePopup extends Component {
     this._onCommentSend = fn;
   }
 
+  set onCommentUndo(fn) {
+    this._onCommentUndo = fn;
+  }
+
   set onListControlToggle(fn) {
     this._onListControlToggle = fn;
   }
@@ -286,19 +295,12 @@ export default class MoviePopup extends Component {
   }
 
 
-  _restoreCommentForm() {
-    this._commentField.value = ``;
-    this._addEmojiBtn.checked = false;
+  _onCloseBtnClick() {
+    if (typeof this._onPopupClose === `function`) {
+      this._onPopupClose();
+    }
   }
 
-  showNewComment(newCommentData) {
-    const commentMarkup = this._getCommentMarkup(newCommentData);
-
-    this._commentsList.insertAdjacentHTML(`beforeend`, commentMarkup);
-    this._commentsCount.textContent = this._comments.length;
-
-    this._restoreCommentForm();
-  }
 
   blockCommentField() {
     this._commentField.disabled = true;
@@ -320,73 +322,22 @@ export default class MoviePopup extends Component {
     }, ERROR_ANIMATION_TIMEOUT);
   }
 
-
-  showUserRating(evt) {
-    evt.target.checked = true;
-
-    this._userRatingOutput.textContent = `Your rate ${this._userRating}`;
+  _restoreCommentForm() {
+    this._commentField.value = ``;
+    this._addEmojiBtn.checked = false;
   }
 
-  blockRatingPickers() {
-    for (const btn of this._ratingBtns) {
-      btn.disabled = true;
-    }
+  addNewComment(newCommentData) {
+    const commentMarkup = this._getCommentMarkup(newCommentData);
+
+    this._comments.push(newCommentData);
+
+    this._commentsList.insertAdjacentHTML(`beforeend`, commentMarkup);
+    this._commentsCount.textContent = this._comments.length;
+
+    this._restoreCommentForm();
+    this._commentUndoBtnWrapper.classList.remove(`visually-hidden`);
   }
-
-  unblockRatingPickers() {
-    for (const btn of this._ratingBtns) {
-      btn.disabled = false;
-    }
-  }
-
-  showChangeRatingError(evt) {
-    const currentBtn = this._ratingBtnsWrapper.querySelector(`[for="${evt.target.id}"]`);
-
-    this._ratingBtnsWrapper.classList.add(`shake`);
-    currentBtn.style.backgroundColor = `red`;
-
-    setTimeout(() => {
-      this._ratingBtnsWrapper.classList.remove(`shake`);
-      currentBtn.style.backgroundColor = ``;
-
-      this.unblockRatingPickers();
-    }, ERROR_ANIMATION_TIMEOUT);
-  }
-
-
-  blockControls() {
-    this._addToWatchlistBtn.disabled = true;
-    this._markAsWatchedBtn.disabled = true;
-    this._addToFavoritesBtn.disabled = true;
-  }
-
-  unblockControls() {
-    this._addToWatchlistBtn.disabled = false;
-    this._markAsWatchedBtn.disabled = false;
-    this._addToFavoritesBtn.disabled = false;
-  }
-
-  showControlsError(evt) {
-    const control = this._listsControls.querySelector(`[for="${evt.target.id}"]`);
-
-    this._listsControls.classList.add(`shake`);
-    control.style.color = `red`;
-
-    setTimeout(() => {
-      this._listsControls.classList.remove(`shake`);
-      control.style.color = ``;
-
-      this.unblockControls();
-    }, ERROR_ANIMATION_TIMEOUT);
-  }
-
-
-  _onCloseBtnClick() {
-    if (typeof this._onPopupClose === `function`) {
-      this._onPopupClose();
-    }
-  }
-
 
   static createCommentMapper(target) {
     return {
@@ -425,53 +376,143 @@ export default class MoviePopup extends Component {
     if ((evt.ctrlKey || evt.metaKey) && evt.keyCode === KeyCode.ENTER) {
       const newCommentData = this._processCommentData(new FormData(this._form));
 
-      this._comments.push(newCommentData);
-
-      if (typeof this._onPopupClose === `function`) {
+      if (typeof this._onCommentSend === `function`) {
         this._onCommentSend(newCommentData);
       }
     }
   }
 
 
-  _onRatingBtnClick(evt) {
-    evt.preventDefault();
+  blockCommentUndoBtn() {
+    this._commentUndoBtn.disabled = true;
+  }
 
-    this._userRating = +evt.target.value;
+  unblockCommentUndoBtn() {
+    this._commentUndoBtn.disabled = false;
+  }
 
-    if (typeof this._onPopupClose === `function`) {
-      this._onRatingChange(evt, this._userRating);
+  showCommentUndoError() {
+    this._commentUndoBtn.classList.add(`shake`);
+    this._commentUndoBtn.style.color = `red`;
+
+    setTimeout(() => {
+      this._commentUndoBtn.classList.remove(`shake`);
+      this._commentUndoBtn.style.color = ``;
+
+      this.unblockCommentUndoBtn();
+      this._commentField.focus();
+    }, ERROR_ANIMATION_TIMEOUT);
+  }
+
+  deleteComment() {
+    this._comments.pop();
+
+    this._commentsList.lastElementChild.remove();
+    this._commentsCount.textContent = this._comments.length;
+
+    this._commentUndoBtnWrapper.classList.add(`visually-hidden`);
+  }
+
+  _onCommentUndoBtnClick() {
+    if (typeof this._onCommentUndo === `function`) {
+      this._onCommentUndo();
     }
   }
 
 
+  blockRatingPickers() {
+    for (const btn of this._ratingBtns) {
+      btn.disabled = true;
+    }
+  }
+
+  unblockRatingPickers() {
+    for (const btn of this._ratingBtns) {
+      btn.disabled = false;
+    }
+  }
+
+  showChangeRatingError(evt) {
+    const currentBtn = this._ratingBtnsWrapper.querySelector(`[for="${evt.target.id}"]`);
+
+    this._ratingBtnsWrapper.classList.add(`shake`);
+    currentBtn.style.backgroundColor = `red`;
+
+    setTimeout(() => {
+      this._ratingBtnsWrapper.classList.remove(`shake`);
+      currentBtn.style.backgroundColor = ``;
+
+      this.unblockRatingPickers();
+    }, ERROR_ANIMATION_TIMEOUT);
+  }
+
+  changeUserRating(evt) {
+    evt.target.checked = true;
+    this._userRating = +evt.target.value;
+
+    this._userRatingOutput.textContent = `Your rate ${this._userRating}`;
+  }
+
+  _onRatingBtnClick(evt) {
+    evt.preventDefault();
+
+    if (typeof this._onPopupClose === `function`) {
+      this._onRatingChange(evt, +evt.target.value);
+    }
+  }
+
+
+  blockControls() {
+    this._addToWatchlistBtn.disabled = true;
+    this._markAsWatchedBtn.disabled = true;
+    this._addToFavoritesBtn.disabled = true;
+  }
+
+  unblockControls() {
+    this._addToWatchlistBtn.disabled = false;
+    this._markAsWatchedBtn.disabled = false;
+    this._addToFavoritesBtn.disabled = false;
+  }
+
+  showControlsError(evt) {
+    const control = this._listsControls.querySelector(`[for="${evt.target.id}"]`);
+
+    this._listsControls.classList.add(`shake`);
+    control.style.color = `red`;
+
+    setTimeout(() => {
+      this._listsControls.classList.remove(`shake`);
+      control.style.color = ``;
+
+      this.unblockControls();
+    }, ERROR_ANIMATION_TIMEOUT);
+  }
+
+  toggleState(stateName) {
+    this._state[stateName] = !this._state[stateName];
+  }
+
   _onAddToWatchlistBtnClick(evt) {
     evt.preventDefault();
 
-    this._state.isInWatchlist = !this._state.isInWatchlist;
-
     if (typeof this._onListControlToggle === `function`) {
-      this._onListControlToggle(evt, `isInWatchlist`, this._state.isInWatchlist);
+      this._onListControlToggle(evt, `isInWatchlist`, !this._state.isInWatchlist);
     }
   }
 
   _onMarkAsWatchedBtnClick(evt) {
     evt.preventDefault();
 
-    this._state.isWatched = !this._state.isWatched;
-
     if (typeof this._onListControlToggle === `function`) {
-      this._onListControlToggle(evt, `isWatched`, this._state.isWatched);
+      this._onListControlToggle(evt, `isWatched`, !this._state.isWatched);
     }
   }
 
   _onAddToFavoritesBtnClick(evt) {
     evt.preventDefault();
 
-    this._state.isFavorite = !this._state.isFavorite;
-
     if (typeof this._onListControlToggle === `function`) {
-      this._onListControlToggle(evt, `isFavorite`, this._state.isFavorite);
+      this._onListControlToggle(evt, `isFavorite`, !this._state.isFavorite);
     }
   }
 
@@ -493,11 +534,15 @@ export default class MoviePopup extends Component {
     this._commentsList = this._element.querySelector(`.film-details__comments-list`);
     this._commentField = this._element.querySelector(`.film-details__comment-input`);
     this._addEmojiBtn = this._element.querySelector(`.film-details__add-emoji`);
+
+    this._commentUndoBtnWrapper = this._element.querySelector(`.film-details__user-rating-controls`);
+    this._commentUndoBtn = this._commentUndoBtnWrapper.querySelector(`.film-details__watched-reset`);
   }
 
   addListeners() {
     this._closeBtn.addEventListener(`click`, this._onCloseBtnClick);
     this._commentField.addEventListener(`keydown`, this._onCommentFieldKeydown);
+    this._commentUndoBtn.addEventListener(`click`, this._onCommentUndoBtnClick);
 
     this._addToWatchlistBtn.addEventListener(`click`, this._onAddToWatchlistBtnClick);
     this._markAsWatchedBtn.addEventListener(`click`, this._onMarkAsWatchedBtnClick);
@@ -526,11 +571,15 @@ export default class MoviePopup extends Component {
     this._commentsList = null;
     this._commentField = null;
     this._addEmojiBtn = null;
+
+    this._commentUndoBtnWrapper = null;
+    this._commentUndoBtn = null;
   }
 
   removeListeners() {
     this._closeBtn.removeEventListener(`click`, this._onCloseBtnClick);
     this._commentField.removeEventListener(`keydown`, this._onCommentFieldKeydown);
+    this._commentUndoBtn.removeEventListener(`click`, this._onCommentUndoBtnClick);
 
     this._addToWatchlistBtn.removeEventListener(`click`, this._onAddToWatchlistBtnClick);
     this._markAsWatchedBtn.removeEventListener(`click`, this._onMarkAsWatchedBtnClick);
