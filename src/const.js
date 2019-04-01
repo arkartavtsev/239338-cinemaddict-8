@@ -10,15 +10,11 @@ export const FILTERS = [
   `Favorites`
 ];
 
-export const MoviesCount = {
-  Main: {
-    MIN: 5,
-    MAX: 15
-  },
-  EXTRA: 2
-};
 
-export const MOVIE_MAX_SCORE = 10;
+export const ERROR_ANIMATION_TIMEOUT = 600;
+
+export const EXTRA_MOVIES_COUNT = 2;
+export const MOVIE_MAX_SCORE = 9;
 
 export const EMOJI_LIST = {
   'sleeping': `&#x1F634`,

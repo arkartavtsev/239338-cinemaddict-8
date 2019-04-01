@@ -1,11 +1,8 @@
-import {MoviesCount, FILTERS} from './const';
-import {getRandomNum} from './util';
-
-import getData from './data';
+import {FILTERS} from './const';
 
 import Filter from './filter';
 
-import createCards from './create-cards';
+import {moviesStore, updateMoviesList} from './movies';
 import showStatistics from './show-statistics';
 
 
@@ -13,8 +10,6 @@ const mainNav = document.querySelector(`.main-navigation`);
 let activeNavItem;
 
 const films = document.querySelector(`.films`);
-const extraFilmsContainers = films.querySelectorAll(`.films-list--extra .films-list__container`);
-
 const statistic = document.querySelector(`.statistic`);
 
 
@@ -29,27 +24,7 @@ const toggleActiveNavItem = (evt) => {
 };
 
 
-const moviesData = getData(getRandomNum(MoviesCount.Main.MIN, MoviesCount.Main.MAX));
-
-
 // фильтры
-
-
-const filterMovies = (movies, filtrationType) => {
-  switch (filtrationType) {
-    case `watchlist`:
-      return movies.filter((item) => item.isInWatchlist);
-
-    case `history`:
-      return movies.filter((item) => item.isWatched);
-
-    case `favorites`:
-      return movies.filter((item) => item.isFavorite);
-
-    default:
-      return movies;
-  }
-};
 
 
 const deleteExistingFilters = () => {
@@ -75,9 +50,7 @@ const createFilters = (container) => {
       if (evt.currentTarget !== activeNavItem) {
         toggleActiveNavItem(evt);
 
-        const filteredCards = filterMovies(moviesData, filterType);
-
-        createCards(filteredCards);
+        updateMoviesList(moviesStore, filterType);
       }
 
       if (films.classList.contains(`visually-hidden`)) {
@@ -99,16 +72,6 @@ createFilters(mainNav);
 activeNavItem = mainNav.querySelector(`.main-navigation__item--active`);
 
 
-// первоначальная отрисовка карточек
-
-
-createCards(moviesData);
-
-for (const container of extraFilmsContainers) {
-  createCards(getData(MoviesCount.EXTRA), false, container);
-}
-
-
 // показ статистики
 
 
@@ -119,7 +82,8 @@ const onStatsBtnClick = (evt) => {
 
   if (evt.currentTarget !== activeNavItem) {
     toggleActiveNavItem(evt);
-    showStatistics(moviesData);
+
+    showStatistics(moviesStore);
   }
 
   if (statistic.classList.contains(`visually-hidden`)) {
