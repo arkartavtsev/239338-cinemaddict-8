@@ -1,6 +1,6 @@
 import {EXTRA_MOVIES_COUNT} from './const';
 import {showMessage} from './util';
-import api from './backend';
+import {provider} from './backend';
 
 import MovieCard from './movie-card';
 import MoviePopup from './movie-popup';
@@ -72,7 +72,7 @@ const createCards = (data, container, isExtra) => {
 
       movieCardComponent.blockCard();
 
-      api.updateMovie(movieData.id, movieData.toRAW())
+      provider.updateMovie(movieData.id, movieData.toRAW())
       .then(() => {
         const activeFilterType = document.querySelector(`.main-navigation__item--active`).dataset.type;
 
@@ -100,7 +100,7 @@ const createCards = (data, container, isExtra) => {
 
       moviePopupComponent.blockCommentField();
 
-      api.updateMovie(movieData.id, movieData.toRAW())
+      provider.updateMovie(movieData.id, movieData.toRAW())
       .then(() => {
         moviePopupComponent.unblockCommentField();
         moviePopupComponent.addNewComment(newData);
@@ -116,7 +116,7 @@ const createCards = (data, container, isExtra) => {
 
       moviePopupComponent.blockCommentUndoBtn();
 
-      api.updateMovie(movieData.id, movieData.toRAW())
+      provider.updateMovie(movieData.id, movieData.toRAW())
       .then(() => {
         moviePopupComponent.unblockCommentUndoBtn();
         moviePopupComponent.deleteComment();
@@ -134,7 +134,7 @@ const createCards = (data, container, isExtra) => {
 
       moviePopupComponent.blockRatingPickers();
 
-      api.updateMovie(movieData.id, movieData.toRAW())
+      provider.updateMovie(movieData.id, movieData.toRAW())
       .then(() => {
         moviePopupComponent.unblockRatingPickers();
         moviePopupComponent.changeUserRating(evt);
@@ -150,7 +150,7 @@ const createCards = (data, container, isExtra) => {
 
       moviePopupComponent.blockControls();
 
-      api.updateMovie(movieData.id, movieData.toRAW())
+      provider.updateMovie(movieData.id, movieData.toRAW())
       .then(() => {
         moviePopupComponent.unblockControls();
         moviePopupComponent.toggleState(stateName);
@@ -193,7 +193,7 @@ const updateMoviesList = (movies, criterion, moviesList = mainFilmsList, isExtra
 const loadMovies = () => {
   showMessage(`Loading movies...`, mainFilmsList);
 
-  return api.getMovies()
+  return provider.getMovies()
     .catch(() => {
       showMessage(`Something went wrong while loading movies. Check your connection or try again later.`, mainFilmsList);
 

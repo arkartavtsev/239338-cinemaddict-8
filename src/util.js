@@ -24,3 +24,6 @@ export const showMessage = (text, container) => {
   msg.textContent = text;
   container.prepend(msg);
 };
+
+
+export const objectToArray = (object) => Object.keys(object).map((key) => object[key]);
