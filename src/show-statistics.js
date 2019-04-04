@@ -6,6 +6,8 @@ import renderChart from './render-chart';
 
 const BAR_HEIGHT = 50;
 
+
+let watchedMovies;
 let chart;
 
 
@@ -13,8 +15,9 @@ const statistic = document.querySelector(`.statistic`);
 const summary = statistic.querySelector(`.statistic__text-list`);
 const chartCanvas = statistic.querySelector(`.statistic__chart`);
 
-const mainRankOutput = statistic.querySelector(`.statistic__rank-label`);
-const profileRankOutput = document.querySelector(`.profile__rating`);
+const rankOutput = statistic.querySelector(`.statistic__rank-label`);
+
+const periodFilters = statistic.querySelectorAll(`.statistic__filters-input`);
 
 
 const getUserRank = (watchedMoviesCount) => {
@@ -31,6 +34,42 @@ const getUserRank = (watchedMoviesCount) => {
 
 const showUserRank = (watchedMoviesCount, output) => {
   output.textContent = getUserRank(watchedMoviesCount);
+};
+
+
+const isMovieWatchDateInPeriod = (movie, period) => {
+  const movieWatchDate = moment(movie.watchDate).startOf(`day`);
+
+  return movieWatchDate >= period.startOf(`day`).valueOf();
+};
+
+const getWatchedMoviesFromPeriod = (movies, period) => {
+  switch (period) {
+    case `statistic-today`:
+      return movies.filter((item) => isMovieWatchDateInPeriod(item, moment()));
+
+    case `statistic-week`:
+      return movies.filter((item) => isMovieWatchDateInPeriod(item, moment().subtract(1, `week`)));
+
+    case `statistic-month`:
+      return movies.filter((item) => isMovieWatchDateInPeriod(item, moment().subtract(1, `month`)));
+
+    case `statistic-year`:
+      return movies.filter((item) => isMovieWatchDateInPeriod(item, moment().subtract(1, `year`)));
+
+    default:
+      return movies;
+  }
+};
+
+
+const restoreStatisticView = () => {
+  hideMessage(statistic);
+  summary.innerHTML = ``;
+
+  if (chart) {
+    chart.destroy();
+  }
 };
 
 
@@ -57,51 +96,28 @@ const renderStatisticSummary = (stats) => `
 `;
 
 
-const restoreStatisticView = () => {
-  hideMessage(statistic);
-  summary.innerHTML = ``;
-
-  if (chart) {
-    chart.destroy();
-  }
-};
-
-
-const showStatistics = (data) => {
-  const watchedMovies = data.filter((item) => item.isWatched);
-
-  if (!watchedMovies.length) {
-    restoreStatisticView();
-    mainRankOutput.parentElement.classList.add(`visually-hidden`);
-
-    showMessage(`There is a lack of data to show statistic. Mark some movies as watched.`, statistic);
-
-    return;
-  }
-
-  const genres = watchedMovies.reduce((acc, item) => {
+const prepareStatistic = (data) => {
+  const genres = data.reduce((acc, item) => {
     acc.push(...item.genres);
     return acc;
   }, []);
 
+  return {
+    watchedCount: data.length,
 
-  const stats = {
-    watchedCount: watchedMovies.length,
-
-    totalDuration: watchedMovies.reduce((acc, item) => acc + item.duration, 0),
+    totalDuration: data.reduce((acc, item) => acc + item.duration, 0),
 
     countedGenres: Object.entries(genres.reduce((acc, item) => {
       acc[item] = acc[item] + 1 || 1;
       return acc;
     }, {}))
   };
+};
 
+const showStatistic = (data) => {
+  const stats = prepareStatistic(data);
 
   restoreStatisticView();
-
-  mainRankOutput.parentElement.classList.remove(`visually-hidden`);
-  showUserRank(watchedMovies.length, mainRankOutput);
-  showUserRank(watchedMovies.length, profileRankOutput);
 
   summary.innerHTML = renderStatisticSummary(stats);
 
@@ -112,7 +128,41 @@ const showStatistics = (data) => {
 };
 
 
+const showStatisticFromPeriod = () => {
+  const period = Array.from(periodFilters).find((filter) => filter.checked === true).id;
+
+  const moviesToShow = getWatchedMoviesFromPeriod(watchedMovies, period);
+
+  showStatistic(moviesToShow);
+};
+
+
+const getStatistic = (data) => {
+  watchedMovies = data.filter((item) => item.isWatched);
+
+  if (!watchedMovies.length) {
+    restoreStatisticView();
+    rankOutput.parentElement.classList.add(`visually-hidden`);
+
+    showMessage(`There is a lack of data to show statistic. Mark some movies as watched.`, statistic);
+
+    return;
+  }
+
+
+  showStatisticFromPeriod();
+
+  rankOutput.parentElement.classList.remove(`visually-hidden`);
+  showUserRank(watchedMovies.length, rankOutput);
+};
+
+
+for (const filter of periodFilters) {
+  filter.addEventListener(`click`, showStatisticFromPeriod);
+}
+
+
 export {
   showUserRank,
-  showStatistics
+  getStatistic
 };

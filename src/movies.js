@@ -45,6 +45,18 @@ const selectMovies = (movies, criterion) => {
 
 
 const createCards = (data, container, isExtra) => {
+const handleWatchedStateChange = (movieData, stateValue) => {
+  const watchedMovies = selectMovies(moviesStore, `history`);
+  showUserRank(watchedMovies.length, profileRankOutput);
+
+  if (stateValue === true) {
+    movieData.watchDate = Date.now();
+  } else {
+    delete movieData.watchDate;
+  }
+};
+
+
   const fragment = document.createDocumentFragment();
 
   container.innerHTML = ``;
@@ -80,8 +92,9 @@ const createCards = (data, container, isExtra) => {
         const activeFilterType = document.querySelector(`.main-navigation__item--active`).dataset.type;
         updateMoviesList(moviesStore, activeFilterType);
 
-        const watchedMovies = selectMovies(moviesStore, `history`);
-        showUserRank(watchedMovies.length, profileRankOutput);
+        if (stateName === `isWatched`) {
+          handleWatchedStateChange(movieData, stateValue);
+        }
       })
       .catch(() => {
         movieData[stateName] = !stateValue;
@@ -162,6 +175,10 @@ const createCards = (data, container, isExtra) => {
       .then(() => {
         moviePopupComponent.unblockControls();
         moviePopupComponent.toggleState(stateName);
+
+        if (stateName === `isWatched`) {
+          handleWatchedStateChange(movieData, stateValue);
+        }
 
         evt.target.checked = !evt.target.checked;
       })

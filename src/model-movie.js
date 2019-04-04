@@ -1,3 +1,12 @@
+import {getRandomNum} from './util';
+
+
+const WATCH_HISTORY_YEARS = 2;
+
+
+const getRandomPastDateWithinYears = (years) => Date.now() + (getRandomNum(-years, 0) * 365 + getRandomNum(-365, 0)) * 24 * 60 * 60 * 1000;
+
+
 export default class ModelMovie {
   constructor(data) {
     this.id = data[`id`];
@@ -20,11 +29,15 @@ export default class ModelMovie {
     this.country = data[`film_info`][`release`][`release_country`] || ``;
     this.releaseDate = data[`film_info`][`release`][`date`];
 
-    this.userRating = data[`user_details`][`personal_rating`];
-
     this.isInWatchlist = Boolean(data[`user_details`][`watchlist`]);
     this.isWatched = Boolean(data[`user_details`][`already_watched`]);
     this.isFavorite = Boolean(data[`user_details`][`favorite`]);
+
+    this.userRating = data[`user_details`][`personal_rating`];
+
+    if (this.isWatched) {
+      this.watchDate = getRandomPastDateWithinYears(WATCH_HISTORY_YEARS);
+    }
 
     this.comments = data[`comments`].map((comment) => ({
       author: comment[`author`] || ``,

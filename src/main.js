@@ -3,7 +3,7 @@ import {FILTERS} from './const';
 import Filter from './filter';
 
 import {moviesStore, updateMoviesList} from './movies';
-import {showStatistics} from './show-statistics';
+import {getStatistic} from './show-statistics';
 
 
 const mainNav = document.querySelector(`.main-navigation`);
@@ -83,7 +83,7 @@ const onStatsBtnClick = (evt) => {
   if (evt.currentTarget !== activeNavItem) {
     toggleActiveNavItem(evt);
 
-    showStatistics(moviesStore);
+    getStatistic(moviesStore);
   }
 
   if (statistic.classList.contains(`visually-hidden`)) {
