@@ -2,6 +2,8 @@ import {EXTRA_MOVIES_COUNT} from './const';
 import {showMessage} from './util';
 import {provider} from './backend';
 
+import {showUserRank} from './show-statistics';
+
 import MovieCard from './movie-card';
 import MoviePopup from './movie-popup';
 
@@ -10,6 +12,7 @@ const mainFilmsList = document.querySelector(`.films-list .films-list__container
 const topRatedFilmsList = document.querySelector(`.films-list--top-rated .films-list__container`);
 const mostCommentedFilmsList = document.querySelector(`.films-list--most-commented .films-list__container`);
 
+const profileRankOutput = document.querySelector(`.profile__rating`);
 const totalMoviesCounter = document.querySelector(`.footer__statistics p`);
 
 
@@ -75,8 +78,10 @@ const createCards = (data, container, isExtra) => {
       provider.updateMovie(movieData.id, movieData.toRAW())
       .then(() => {
         const activeFilterType = document.querySelector(`.main-navigation__item--active`).dataset.type;
-
         updateMoviesList(moviesStore, activeFilterType);
+
+        const watchedMovies = selectMovies(moviesStore, `history`);
+        showUserRank(watchedMovies.length, profileRankOutput);
       })
       .catch(() => {
         movieData[stateName] = !stateValue;
@@ -91,6 +96,9 @@ const createCards = (data, container, isExtra) => {
       updateMoviesList(moviesStore, activeFilterType);
       updateMoviesList(moviesStore, `top-rated`, topRatedFilmsList, true);
       updateMoviesList(moviesStore, `most-commented`, mostCommentedFilmsList, true);
+
+      const watchedMovies = selectMovies(moviesStore, `history`);
+      showUserRank(watchedMovies.length, profileRankOutput);
 
       moviePopupComponent.unrender();
     };
@@ -206,6 +214,9 @@ loadMovies()
   .then((movies) => {
     if (movies.length) {
       totalMoviesCounter.textContent = `${movies.length} ${movies.length === 1 ? `movie` : `movies`} inside`;
+
+      const watchedMovies = selectMovies(movies, `history`);
+      showUserRank(watchedMovies.length, profileRankOutput);
 
       moviesStore = movies.slice();
     }

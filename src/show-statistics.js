@@ -13,6 +13,26 @@ const statistic = document.querySelector(`.statistic`);
 const summary = statistic.querySelector(`.statistic__text-list`);
 const chartCanvas = statistic.querySelector(`.statistic__chart`);
 
+const mainRankOutput = statistic.querySelector(`.statistic__rank-label`);
+const profileRankOutput = document.querySelector(`.profile__rating`);
+
+
+const getUserRank = (watchedMoviesCount) => {
+  if (watchedMoviesCount > 20) {
+    return `Movie Buff`;
+  }
+
+  if (watchedMoviesCount <= 20 && watchedMoviesCount > 10) {
+    return `Fan`;
+  }
+
+  return `Novice`;
+};
+
+const showUserRank = (watchedMoviesCount, output) => {
+  output.textContent = getUserRank(watchedMoviesCount);
+};
+
 
 const renderStatisticSummary = (stats) => `
   <li class="statistic__text-item">
@@ -47,11 +67,13 @@ const restoreStatisticView = () => {
 };
 
 
-export default (data) => {
+const showStatistics = (data) => {
   const watchedMovies = data.filter((item) => item.isWatched);
 
   if (!watchedMovies.length) {
     restoreStatisticView();
+    mainRankOutput.parentElement.classList.add(`visually-hidden`);
+
     showMessage(`There is a lack of data to show statistic. Mark some movies as watched.`, statistic);
 
     return;
@@ -76,10 +98,21 @@ export default (data) => {
 
 
   restoreStatisticView();
+
+  mainRankOutput.parentElement.classList.remove(`visually-hidden`);
+  showUserRank(watchedMovies.length, mainRankOutput);
+  showUserRank(watchedMovies.length, profileRankOutput);
+
   summary.innerHTML = renderStatisticSummary(stats);
 
   if (stats.countedGenres.length) {
     chartCanvas.height = BAR_HEIGHT * stats.countedGenres.length;
     chart = renderChart(chartCanvas, stats.countedGenres);
   }
+};
+
+
+export {
+  showUserRank,
+  showStatistics
 };
