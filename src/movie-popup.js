@@ -60,6 +60,7 @@ export default class MoviePopup extends Component {
 
     this._commentUndoBtnWrapper = null;
     this._commentUndoBtn = null;
+    this._movieStatusOutput = null;
 
 
     this._onPopupClose = null;
@@ -117,6 +118,16 @@ export default class MoviePopup extends Component {
       >
       <label class="film-details__emoji-label" for="emoji-${emojiName}">${EMOJI_LIST[emojiName]}</label>
     `).join(` `);
+  }
+
+  _getMovieStatus() {
+    if (this._state.isWatched) {
+      return `Already watched`;
+    } else if (this._state.isInWatchlist) {
+      return `Will watch`;
+    } else {
+      return `Not watched`;
+    }
   }
 
   _addScorePickers() {
@@ -241,7 +252,9 @@ export default class MoviePopup extends Component {
 
           <section class="film-details__user-rating-wrap">
             <div class="film-details__user-rating-controls visually-hidden">
-              <span class="film-details__watched-status film-details__watched-status--active">Already watched</span>
+              <span class="film-details__watched-status ${this._state.isInWatchlist || this._state.isWatched ? `film-details__watched-status--active` : ``}">
+                ${this._getMovieStatus()}
+              </span>
               <button class="film-details__watched-reset" type="button">undo</button>
             </div>
 
@@ -490,6 +503,13 @@ export default class MoviePopup extends Component {
 
   toggleState(stateName) {
     this._state[stateName] = !this._state[stateName];
+    this._movieStatusOutput.textContent = this._getMovieStatus();
+
+    if (this._state.isInWatchlist || this._state.isWatched) {
+      this._movieStatusOutput.classList.add(`film-details__watched-status--active`);
+    } else {
+      this._movieStatusOutput.classList.remove(`film-details__watched-status--active`);
+    }
   }
 
   _onAddToWatchlistBtnClick(evt) {
@@ -537,6 +557,7 @@ export default class MoviePopup extends Component {
 
     this._commentUndoBtnWrapper = this._element.querySelector(`.film-details__user-rating-controls`);
     this._commentUndoBtn = this._commentUndoBtnWrapper.querySelector(`.film-details__watched-reset`);
+    this._movieStatusOutput = this._commentUndoBtnWrapper.querySelector(`.film-details__watched-status`);
   }
 
   addListeners() {
@@ -574,6 +595,7 @@ export default class MoviePopup extends Component {
 
     this._commentUndoBtnWrapper = null;
     this._commentUndoBtn = null;
+    this._movieStatusOutput = null;
   }
 
   removeListeners() {
