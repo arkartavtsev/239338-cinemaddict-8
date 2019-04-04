@@ -71,6 +71,8 @@ export default class MoviePopup extends Component {
 
 
     this._onCloseBtnClick = this._onCloseBtnClick.bind(this);
+    this._onEscPress = this._onEscPress.bind(this);
+
     this._onRatingBtnClick = this._onRatingBtnClick.bind(this);
     this._onCommentFieldKeydown = this._onCommentFieldKeydown.bind(this);
     this._onCommentUndoBtnClick = this._onCommentUndoBtnClick.bind(this);
@@ -316,6 +318,12 @@ export default class MoviePopup extends Component {
 
   _onCloseBtnClick() {
     if (typeof this._onPopupClose === `function`) {
+      this._onPopupClose();
+    }
+  }
+
+  _onEscPress(evt) {
+    if (evt.keyCode === KeyCode.ESC && typeof this._onPopupClose === `function`) {
       this._onPopupClose();
     }
   }
@@ -581,6 +589,8 @@ export default class MoviePopup extends Component {
 
   addListeners() {
     this._closeBtn.addEventListener(`click`, this._onCloseBtnClick);
+    window.addEventListener(`keydown`, this._onEscPress);
+
     this._commentField.addEventListener(`keydown`, this._onCommentFieldKeydown);
     this._commentUndoBtn.addEventListener(`click`, this._onCommentUndoBtnClick);
 
@@ -619,6 +629,8 @@ export default class MoviePopup extends Component {
 
   removeListeners() {
     this._closeBtn.removeEventListener(`click`, this._onCloseBtnClick);
+    window.removeEventListener(`keydown`, this._onEscPress);
+
     this._commentField.removeEventListener(`keydown`, this._onCommentFieldKeydown);
     this._commentUndoBtn.removeEventListener(`click`, this._onCommentUndoBtnClick);
 
