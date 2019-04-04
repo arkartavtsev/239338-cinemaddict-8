@@ -25,7 +25,7 @@ const renderStatisticSummary = (stats) => `
   <li class="statistic__text-item">
     <h4 class="statistic__item-title">Total duration</h4>
     <p class="statistic__item-text">
-      ${moment.duration(stats.totalDuration, `minutes`).hours()}
+      ${Math.trunc(moment.duration(stats.totalDuration, `minutes`).asHours())}
       <span class="statistic__item-description">h</span>
       ${moment.duration(stats.totalDuration, `minutes`).minutes()}
       <span class="statistic__item-description">m</span></p>

@@ -87,7 +87,7 @@ export default class MovieCard extends Component {
         <p class="film-card__info">
           <span class="film-card__year">${moment(this._year).format(`YYYY`)}</span>
           <span class="film-card__duration">
-            ${moment.duration(this._duration, `minutes`).hours()}h&nbsp;
+            ${Math.trunc(moment.duration(this._duration, `minutes`).asHours())}h&nbsp;
             ${moment.duration(this._duration, `minutes`).minutes()}m
           </span>
           <span class="film-card__genre">${this._genre}</span>
