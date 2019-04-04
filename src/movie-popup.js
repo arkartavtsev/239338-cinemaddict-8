@@ -212,17 +212,23 @@ export default class MoviePopup extends Component {
             <input type="checkbox" class="film-details__control-input visually-hidden" id="watchlist" name="watchlist"
             ${this._state.isInWatchlist ? `checked` : ``}
             >
-            <label for="watchlist" class="film-details__control-label film-details__control-label--watchlist">Add to watchlist</label>
+            <label for="watchlist" class="film-details__control-label film-details__control-label--watchlist">
+              ${this._state.isInWatchlist ? `Added to watchlist` : `Add to watchlist`}
+            </label>
 
             <input type="checkbox" class="film-details__control-input visually-hidden" id="watched" name="watched"
             ${this._state.isWatched ? `checked` : ``}
             >
-            <label for="watched" class="film-details__control-label film-details__control-label--watched">Already watched</label>
+            <label for="watched" class="film-details__control-label film-details__control-label--watched">
+              ${this._state.isWatched ? `Already watched` : `Mark as watched`}
+            </label>
 
             <input type="checkbox" class="film-details__control-input visually-hidden" id="favorite" name="favorite"
             ${this._state.isFavorite ? `checked` : ``}
             >
-            <label for="favorite" class="film-details__control-label film-details__control-label--favorite">Add to favorites</label>
+            <label for="favorite" class="film-details__control-label film-details__control-label--favorite">
+              ${this._state.isFavorite ? `Added to favorites` : `Add to favorites`}
+            </label>
           </section>
 
           <section class="film-details__comments-wrap">
@@ -503,6 +509,19 @@ export default class MoviePopup extends Component {
 
   toggleState(stateName) {
     this._state[stateName] = !this._state[stateName];
+
+    if (stateName === `isInWatchlist`) {
+      this._listsControls.querySelector(`[for="${this._addToWatchlistBtn.id}"]`).textContent = this._state[stateName] ? `Added to watchlist` : `Add to watchlist`;
+    }
+
+    if (stateName === `isWatched`) {
+      this._listsControls.querySelector(`[for="${this._markAsWatchedBtn.id}"]`).textContent = this._state[stateName] ? `Already watched` : `Mark as watched`;
+    }
+
+    if (stateName === `isFavorite`) {
+      this._listsControls.querySelector(`[for="${this._addToFavoritesBtn.id}"]`).textContent = this._state[stateName] ? `Added to favorites` : `Add to favorites`;
+    }
+
     this._movieStatusOutput.textContent = this._getMovieStatus();
 
     if (this._state.isInWatchlist || this._state.isWatched) {
