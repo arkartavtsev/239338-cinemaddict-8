@@ -56,7 +56,10 @@ export default class MoviePopup extends Component {
     this._commentsCount = null;
     this._commentsList = null;
     this._commentField = null;
+
     this._addEmojiBtn = null;
+    this._addEmojiLabel = null;
+    this._emojiPickers = null;
 
     this._commentStatusOutput = null;
     this._commentUndoBtn = null;
@@ -75,6 +78,7 @@ export default class MoviePopup extends Component {
     this._onRatingBtnClick = this._onRatingBtnClick.bind(this);
     this._onCommentFieldKeydown = this._onCommentFieldKeydown.bind(this);
     this._onCommentUndoBtnClick = this._onCommentUndoBtnClick.bind(this);
+    this._onEmojiPickerClick = this._onEmojiPickerClick.bind(this);
 
     this._onAddToWatchlistBtnClick = this._onAddToWatchlistBtnClick.bind(this);
     this._onMarkAsWatchedBtnClick = this._onMarkAsWatchedBtnClick.bind(this);
@@ -348,7 +352,11 @@ export default class MoviePopup extends Component {
 
   _restoreCommentForm() {
     this._commentField.value = ``;
+
     this._addEmojiBtn.checked = false;
+    this._addEmojiLabel.innerHTML = EMOJI_LIST[`neutral-face`];
+
+    Array.from(this._emojiPickers).find((picker) => picker.value === `neutral-face`).checked = true;
   }
 
   addNewComment(newCommentData) {
@@ -406,6 +414,11 @@ export default class MoviePopup extends Component {
         this._onCommentSend(newCommentData);
       }
     }
+  }
+
+
+  _onEmojiPickerClick(evt) {
+    this._addEmojiLabel.innerHTML = EMOJI_LIST[evt.target.value];
   }
 
 
@@ -572,7 +585,10 @@ export default class MoviePopup extends Component {
     this._commentsCount = this._element.querySelector(`.film-details__comments-count`);
     this._commentsList = this._element.querySelector(`.film-details__comments-list`);
     this._commentField = this._element.querySelector(`.film-details__comment-input`);
+
     this._addEmojiBtn = this._element.querySelector(`.film-details__add-emoji`);
+    this._addEmojiLabel = this._element.querySelector(`.film-details__add-emoji-label`);
+    this._emojiPickers = this._element.querySelectorAll(`.film-details__emoji-item`);
 
     this._commentStatusOutput = this._element.querySelector(`.film-details__watched-status`);
     this._commentUndoBtn = this._element.querySelector(`.film-details__watched-reset`);
@@ -588,6 +604,10 @@ export default class MoviePopup extends Component {
     this._addToWatchlistBtn.addEventListener(`click`, this._onAddToWatchlistBtnClick);
     this._markAsWatchedBtn.addEventListener(`click`, this._onMarkAsWatchedBtnClick);
     this._addToFavoritesBtn.addEventListener(`click`, this._onAddToFavoritesBtnClick);
+
+    for (const picker of this._emojiPickers) {
+      picker.addEventListener(`click`, this._onEmojiPickerClick);
+    }
 
     for (const btn of this._ratingBtns) {
       btn.addEventListener(`click`, this._onRatingBtnClick);
@@ -611,7 +631,10 @@ export default class MoviePopup extends Component {
     this._commentsCount = null;
     this._commentsList = null;
     this._commentField = null;
+
     this._addEmojiBtn = null;
+    this._addEmojiLabel = null;
+    this._emojiPickers = null;
 
     this._commentStatusOutput = null;
     this._commentUndoBtn = null;
@@ -627,6 +650,10 @@ export default class MoviePopup extends Component {
     this._addToWatchlistBtn.removeEventListener(`click`, this._onAddToWatchlistBtnClick);
     this._markAsWatchedBtn.removeEventListener(`click`, this._onMarkAsWatchedBtnClick);
     this._addToFavoritesBtn.removeEventListener(`click`, this._onAddToFavoritesBtnClick);
+
+    for (const picker of this._emojiPickers) {
+      picker.removeEventListener(`click`, this._onEmojiPickerClick);
+    }
 
     for (const btn of this._ratingBtns) {
       btn.removeEventListener(`click`, this._onRatingBtnClick);
