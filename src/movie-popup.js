@@ -58,9 +58,8 @@ export default class MoviePopup extends Component {
     this._commentField = null;
     this._addEmojiBtn = null;
 
-    this._commentUndoBtnWrapper = null;
+    this._commentStatusOutput = null;
     this._commentUndoBtn = null;
-    this._movieStatusOutput = null;
 
 
     this._onPopupClose = null;
@@ -259,11 +258,9 @@ export default class MoviePopup extends Component {
           </section>
 
           <section class="film-details__user-rating-wrap">
-            <div class="film-details__user-rating-controls visually-hidden">
-              <span class="film-details__watched-status ${this._state.isInWatchlist || this._state.isWatched ? `film-details__watched-status--active` : ``}">
-                ${this._getMovieStatus()}
-              </span>
-              <button class="film-details__watched-reset" type="button">undo</button>
+            <div class="film-details__user-rating-controls">
+              <span class="film-details__watched-status"></span>
+              <button class="film-details__watched-reset visually-hidden" type="button">undo</button>
             </div>
 
             <div class="film-details__user-score">
@@ -363,7 +360,9 @@ export default class MoviePopup extends Component {
     this._commentsCount.textContent = this._comments.length;
 
     this._restoreCommentForm();
-    this._commentUndoBtnWrapper.classList.remove(`visually-hidden`);
+
+    this._commentStatusOutput.textContent = `Comment added`;
+    this._commentUndoBtn.classList.remove(`visually-hidden`);
   }
 
   static createCommentMapper(target) {
@@ -437,7 +436,8 @@ export default class MoviePopup extends Component {
     this._commentsList.lastElementChild.remove();
     this._commentsCount.textContent = this._comments.length;
 
-    this._commentUndoBtnWrapper.classList.add(`visually-hidden`);
+    this._commentStatusOutput.textContent = `Comment deleted`;
+    this._commentUndoBtn.classList.add(`visually-hidden`);
   }
 
   _onCommentUndoBtnClick() {
@@ -529,14 +529,6 @@ export default class MoviePopup extends Component {
     if (stateName === `isFavorite`) {
       this._listsControls.querySelector(`[for="${this._addToFavoritesBtn.id}"]`).textContent = this._state[stateName] ? `Added to favorites` : `Add to favorites`;
     }
-
-    this._movieStatusOutput.textContent = this._getMovieStatus();
-
-    if (this._state.isInWatchlist || this._state.isWatched) {
-      this._movieStatusOutput.classList.add(`film-details__watched-status--active`);
-    } else {
-      this._movieStatusOutput.classList.remove(`film-details__watched-status--active`);
-    }
   }
 
   _onAddToWatchlistBtnClick(evt) {
@@ -582,9 +574,8 @@ export default class MoviePopup extends Component {
     this._commentField = this._element.querySelector(`.film-details__comment-input`);
     this._addEmojiBtn = this._element.querySelector(`.film-details__add-emoji`);
 
-    this._commentUndoBtnWrapper = this._element.querySelector(`.film-details__user-rating-controls`);
-    this._commentUndoBtn = this._commentUndoBtnWrapper.querySelector(`.film-details__watched-reset`);
-    this._movieStatusOutput = this._commentUndoBtnWrapper.querySelector(`.film-details__watched-status`);
+    this._commentStatusOutput = this._element.querySelector(`.film-details__watched-status`);
+    this._commentUndoBtn = this._element.querySelector(`.film-details__watched-reset`);
   }
 
   addListeners() {
@@ -622,9 +613,8 @@ export default class MoviePopup extends Component {
     this._commentField = null;
     this._addEmojiBtn = null;
 
-    this._commentUndoBtnWrapper = null;
+    this._commentStatusOutput = null;
     this._commentUndoBtn = null;
-    this._movieStatusOutput = null;
   }
 
   removeListeners() {
