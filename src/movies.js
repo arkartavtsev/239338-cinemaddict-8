@@ -12,13 +12,24 @@ const mainFilmsList = document.querySelector(`.films-list .films-list__container
 const topRatedFilmsList = document.querySelector(`.films-list--top-rated .films-list__container`);
 const mostCommentedFilmsList = document.querySelector(`.films-list--most-commented .films-list__container`);
 
+const loadMorebtn = document.querySelector(`.films-list__show-more`);
+
 const profileRankOutput = document.querySelector(`.profile__rating`);
 const totalMoviesCounter = document.querySelector(`.footer__statistics p`);
 
 
 let filtersCounters;
+let openedPopup;
 
 let moviesStore = [];
+let moviesToShow = [];
+
+
+const stateToFilterName = {
+  isInWatchlist: `watchlist`,
+  isWatched: `history`,
+  isFavorite: `favorites`
+};
 
 
 const selectMovies = (movies, criterion) => {
@@ -44,7 +55,6 @@ const selectMovies = (movies, criterion) => {
 };
 
 
-const createCards = (data, container, isExtra) => {
 const handleWatchedStateChange = (movieData, stateValue) => {
   const watchedMovies = selectMovies(moviesStore, `history`);
   showUserRank(watchedMovies.length, profileRankOutput);
@@ -56,10 +66,167 @@ const handleWatchedStateChange = (movieData, stateValue) => {
   }
 };
 
+const updateFiltersCounters = () => {
+  if (!filtersCounters) {
+    filtersCounters = document.querySelectorAll(`.main-navigation__item-count`);
+  }
 
+  for (const counter of filtersCounters) {
+    counter.textContent = selectMovies(moviesStore, counter.parentElement.dataset.type).length;
+  }
+};
+
+
+const createMovie = (movieData, isFull) => {
+  const movieCardComponent = new MovieCard(movieData);
+  const moviePopupComponent = new MoviePopup(movieData);
+
+
+  movieCardComponent.isFull = isFull;
+
+  movieCardComponent.onPopupOpen = () => {
+    if (openedPopup === moviePopupComponent) {
+      return;
+    }
+
+    if (openedPopup) {
+      openedPopup.unrender();
+    }
+
+    openedPopup = moviePopupComponent;
+    moviePopupComponent.update(movieData);
+
+    const popupElement = moviePopupComponent.render();
+    document.body.appendChild(popupElement);
+  };
+
+  movieCardComponent.onListControlToggle = (evt, stateName, stateValue) => {
+    movieData[stateName] = stateValue;
+
+    movieCardComponent.blockCard();
+
+    provider.updateMovie(movieData.id, movieData.toRAW())
+    .then(() => {
+      movieCardComponent.unblockCard();
+      movieCardComponent.toggleState(evt, stateName);
+
+      if (document.querySelector(`.main-navigation__item--active`).dataset.type === stateToFilterName[stateName]) {
+        movieCardComponent.unrender();
+
+        if (!mainFilmsList.children.length) {
+          showMessage(`There are no suitable movies to show.`, mainFilmsList);
+        }
+      }
+
+      updateFiltersCounters();
+
+      if (stateName === `isWatched`) {
+        handleWatchedStateChange(movieData, stateValue);
+      }
+    })
+    .catch(() => {
+      movieData[stateName] = !stateValue;
+      movieCardComponent.showError(evt);
+    });
+  };
+
+
+  moviePopupComponent.onPopupClose = () => {
+    const oldCardElement = mainFilmsList.querySelector(`[data-id="${moviePopupComponent._id}"]`);
+
+    const updatedMovieCardComponent = new MovieCard(movieData);
+    const newCardElement = updatedMovieCardComponent.render();
+
+    mainFilmsList.replaceChild(newCardElement, oldCardElement);
+
+    updateExtraMovies(moviesStore, `top-rated`, topRatedFilmsList);
+    updateExtraMovies(moviesStore, `most-commented`, mostCommentedFilmsList);
+
+    updateFiltersCounters();
+
+    moviePopupComponent.unrender();
+    openedPopup = null;
+  };
+
+  moviePopupComponent.onCommentSend = (newData) => {
+    movieData.comments.push(newData);
+
+    moviePopupComponent.blockCommentField();
+
+    provider.updateMovie(movieData.id, movieData.toRAW())
+    .then(() => {
+      moviePopupComponent.unblockCommentField();
+      moviePopupComponent.addNewComment(newData);
+    })
+    .catch(() => {
+      movieData.comments.pop();
+      moviePopupComponent.showCommentSendError();
+    });
+  };
+
+  moviePopupComponent.onCommentUndo = () => {
+    const commentToRemove = movieData.comments.pop();
+
+    moviePopupComponent.blockCommentUndoBtn();
+
+    provider.updateMovie(movieData.id, movieData.toRAW())
+    .then(() => {
+      moviePopupComponent.unblockCommentUndoBtn();
+      moviePopupComponent.deleteComment();
+    })
+    .catch(() => {
+      movieData.comments.push(commentToRemove);
+      moviePopupComponent.showCommentUndoError();
+    });
+  };
+
+  moviePopupComponent.onRatingChange = (evt, newData) => {
+    const currentValue = movieData.userRating;
+
+    movieData.userRating = newData;
+
+    moviePopupComponent.blockRatingPickers();
+
+    provider.updateMovie(movieData.id, movieData.toRAW())
+    .then(() => {
+      moviePopupComponent.unblockRatingPickers();
+      moviePopupComponent.changeUserRating(evt);
+    })
+    .catch(() => {
+      movieData.userRating = currentValue;
+      moviePopupComponent.showChangeRatingError(evt);
+    });
+  };
+
+  moviePopupComponent.onListControlToggle = (evt, stateName, stateValue) => {
+    movieData[stateName] = stateValue;
+
+    moviePopupComponent.blockControls();
+
+    provider.updateMovie(movieData.id, movieData.toRAW())
+    .then(() => {
+      moviePopupComponent.unblockControls();
+      moviePopupComponent.toggleState(stateName);
+
+      if (stateName === `isWatched`) {
+        handleWatchedStateChange(movieData, stateValue);
+      }
+
+      evt.target.checked = !evt.target.checked;
+    })
+    .catch(() => {
+      movieData[stateName] = !stateValue;
+      moviePopupComponent.showControlsError(evt);
+    });
+  };
+
+
+  return movieCardComponent.render();
+};
+
+
+const createCards = (data, container = mainFilmsList, isFull = true) => {
   const fragment = document.createDocumentFragment();
-
-  container.innerHTML = ``;
 
   if (!data.length) {
     showMessage(`There are no suitable movies to show.`, container);
@@ -68,149 +235,40 @@ const handleWatchedStateChange = (movieData, stateValue) => {
   }
 
   for (const movieData of data) {
-    const movieCardComponent = new MovieCard(movieData);
-    const moviePopupComponent = new MoviePopup(movieData);
+    const movieElement = createMovie(movieData, isFull);
 
-
-    movieCardComponent.isFull = !isExtra;
-
-
-    movieCardComponent.onPopupOpen = () => {
-      moviePopupComponent.update(movieData);
-      moviePopupComponent.render();
-
-      document.body.appendChild(moviePopupComponent.element);
-    };
-
-    movieCardComponent.onListControlToggle = (evt, stateName, stateValue) => {
-      movieData[stateName] = stateValue;
-
-      movieCardComponent.blockCard();
-
-      provider.updateMovie(movieData.id, movieData.toRAW())
-      .then(() => {
-        const activeFilterType = document.querySelector(`.main-navigation__item--active`).dataset.type;
-        updateMoviesList(moviesStore, activeFilterType);
-
-        if (stateName === `isWatched`) {
-          handleWatchedStateChange(movieData, stateValue);
-        }
-      })
-      .catch(() => {
-        movieData[stateName] = !stateValue;
-        movieCardComponent.showError(evt);
-      });
-    };
-
-
-    moviePopupComponent.onPopupClose = () => {
-      const activeFilterType = document.querySelector(`.main-navigation__item--active`).dataset.type;
-
-      updateMoviesList(moviesStore, activeFilterType);
-      updateMoviesList(moviesStore, `top-rated`, topRatedFilmsList, true);
-      updateMoviesList(moviesStore, `most-commented`, mostCommentedFilmsList, true);
-
-      const watchedMovies = selectMovies(moviesStore, `history`);
-      showUserRank(watchedMovies.length, profileRankOutput);
-
-      moviePopupComponent.unrender();
-    };
-
-    moviePopupComponent.onCommentSend = (newData) => {
-      movieData.comments.push(newData);
-
-      moviePopupComponent.blockCommentField();
-
-      provider.updateMovie(movieData.id, movieData.toRAW())
-      .then(() => {
-        moviePopupComponent.unblockCommentField();
-        moviePopupComponent.addNewComment(newData);
-      })
-      .catch(() => {
-        movieData.comments.pop();
-        moviePopupComponent.showCommentSendError();
-      });
-    };
-
-    moviePopupComponent.onCommentUndo = () => {
-      const commentToRemove = movieData.comments.pop();
-
-      moviePopupComponent.blockCommentUndoBtn();
-
-      provider.updateMovie(movieData.id, movieData.toRAW())
-      .then(() => {
-        moviePopupComponent.unblockCommentUndoBtn();
-        moviePopupComponent.deleteComment();
-      })
-      .catch(() => {
-        movieData.comments.push(commentToRemove);
-        moviePopupComponent.showCommentUndoError();
-      });
-    };
-
-    moviePopupComponent.onRatingChange = (evt, newData) => {
-      const currentValue = movieData.userRating;
-
-      movieData.userRating = newData;
-
-      moviePopupComponent.blockRatingPickers();
-
-      provider.updateMovie(movieData.id, movieData.toRAW())
-      .then(() => {
-        moviePopupComponent.unblockRatingPickers();
-        moviePopupComponent.changeUserRating(evt);
-      })
-      .catch(() => {
-        movieData.userRating = currentValue;
-        moviePopupComponent.showChangeRatingError(evt);
-      });
-    };
-
-    moviePopupComponent.onListControlToggle = (evt, stateName, stateValue) => {
-      movieData[stateName] = stateValue;
-
-      moviePopupComponent.blockControls();
-
-      provider.updateMovie(movieData.id, movieData.toRAW())
-      .then(() => {
-        moviePopupComponent.unblockControls();
-        moviePopupComponent.toggleState(stateName);
-
-        if (stateName === `isWatched`) {
-          handleWatchedStateChange(movieData, stateValue);
-        }
-
-        evt.target.checked = !evt.target.checked;
-      })
-      .catch(() => {
-        movieData[stateName] = !stateValue;
-        moviePopupComponent.showControlsError(evt);
-      });
-    };
-
-
-    fragment.appendChild(movieCardComponent.render());
+    fragment.appendChild(movieElement);
   }
 
   container.appendChild(fragment);
 };
 
 
-const updateMoviesList = (movies, criterion, moviesList = mainFilmsList, isExtra = false) => {
-  if (!isExtra && !filtersCounters) {
-    filtersCounters = document.querySelectorAll(`.main-navigation__item-count`);
-  }
-
-  if (!isExtra) {
-    for (const counter of filtersCounters) {
-      counter.textContent = selectMovies(movies, counter.parentElement.dataset.type).length;
-    }
-  }
+const updateMoviesList = (movies, criterion) => {
+  updateFiltersCounters();
 
   if (movies.length) {
-    const moviesToShow = selectMovies(movies, criterion);
+    moviesToShow = selectMovies(movies, criterion);
 
-    createCards(moviesToShow, moviesList, isExtra);
+    if (moviesToShow.length <= 5) {
+      loadMorebtn.classList.add(`visually-hidden`);
+    } else {
+      loadMorebtn.classList.remove(`visually-hidden`);
+    }
+
+    mainFilmsList.innerHTML = ``;
+    createCards(moviesToShow.slice(0, 5));
+  }
+};
+
+
+const updateExtraMovies = (movies, criterion, moviesList) => {
+  moviesList.innerHTML = ``;
+
+  if (movies.length) {
+    const extraMovies = selectMovies(movies, criterion);
+
+    createCards(extraMovies, moviesList, false);
   }
 };
 
@@ -239,9 +297,24 @@ loadMovies()
     }
 
     updateMoviesList(moviesStore, `all`, mainFilmsList);
-    updateMoviesList(moviesStore, `top-rated`, topRatedFilmsList, true);
-    updateMoviesList(moviesStore, `most-commented`, mostCommentedFilmsList, true);
+
+    updateExtraMovies(moviesStore, `top-rated`, topRatedFilmsList);
+    updateExtraMovies(moviesStore, `most-commented`, mostCommentedFilmsList);
   });
 
 
-export {moviesStore, updateMoviesList};
+const onLoadMoreBtnClick = () => {
+  const renderedCardsCount = mainFilmsList.children.length;
+  const toshow = moviesToShow.slice(renderedCardsCount, renderedCardsCount + 5);
+
+  if (renderedCardsCount + 5 >= moviesToShow.length) {
+    loadMorebtn.classList.add(`visually-hidden`);
+  }
+
+  createCards(toshow);
+};
+
+loadMorebtn.addEventListener(`click`, onLoadMoreBtnClick);
+
+
+export {moviesStore, updateMoviesList, createCards};

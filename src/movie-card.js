@@ -81,7 +81,7 @@ export default class MovieCard extends Component {
 
   get template() {
     return `
-      <article class="film-card ${this._state.isFull ? `` : `film-card--no-controls`}">
+      <article class="film-card ${this._state.isFull ? `` : `film-card--no-controls`}" data-id="${this._id}">
         <h3 class="film-card__title">${this._title}</h3>
         <p class="film-card__rating">${this._rating}</p>
         <p class="film-card__info">
@@ -118,6 +118,13 @@ export default class MovieCard extends Component {
   }
 
 
+  _onCommentsBtnClick() {
+    if (typeof this._onPopupOpen === `function`) {
+      this._onPopupOpen();
+    }
+  }
+
+
   blockCard() {
     this._addToWatchlistBtn.disabled = true;
     this._markAsWatchedBtn.disabled = true;
@@ -142,13 +149,11 @@ export default class MovieCard extends Component {
     }, ERROR_ANIMATION_TIMEOUT);
   }
 
+  toggleState(evt, stateName) {
+    this._state[stateName] = !this._state[stateName];
 
-  _onCommentsBtnClick() {
-    if (typeof this._onPopupOpen === `function`) {
-      this._onPopupOpen();
-    }
+    evt.target.classList.toggle(`film-card__controls-item--active`);
   }
-
 
   _onAddToWatchlistBtnClick(evt) {
     if (typeof this._onListControlToggle === `function`) {
