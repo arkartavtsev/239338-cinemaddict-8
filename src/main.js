@@ -1,16 +1,61 @@
 import {FILTERS} from './const';
 
+import Search from './search';
 import Filter from './filter';
 
-import {moviesStore, updateMoviesList} from './movies';
+import {moviesStore, updateMoviesList, createCards} from './movies';
 import {getStatistic} from './show-statistics';
 
+
+const pageHeader = document.querySelector(`.header`);
 
 const mainNav = document.querySelector(`.main-navigation`);
 let activeNavItem;
 
 const films = document.querySelector(`.films`);
+const mainFilmsList = films.querySelector(`.films-list .films-list__container`);
+const loadMorebtn = films.querySelector(`.films-list__show-more`);
+
 const statistic = document.querySelector(`.statistic`);
+
+
+const searchComponent = new Search();
+
+searchComponent.onSearch = () => {
+  if (activeNavItem) {
+    activeNavItem.classList.remove(`main-navigation__item--active`);
+
+    if (activeNavItem.classList.contains(`main-navigation__item--additional`)) {
+      films.classList.remove(`visually-hidden`);
+      statistic.classList.add(`visually-hidden`);
+    }
+  }
+
+  const searchRequest = searchComponent.field.value.trim().toLowerCase();
+
+  const searchedMovies = moviesStore.filter((item) => item.title.toLowerCase().indexOf(searchRequest) !== -1);
+
+  mainFilmsList.innerHTML = ``;
+  loadMorebtn.classList.add(`visually-hidden`);
+
+  createCards(searchedMovies);
+
+  if (!searchRequest.length) {
+    activeNavItem.classList.add(`main-navigation__item--active`);
+
+    if (activeNavItem.classList.contains(`main-navigation__item--additional`)) {
+      films.classList.add(`visually-hidden`);
+      statistic.classList.remove(`visually-hidden`);
+    } else {
+      updateMoviesList(moviesStore, activeNavItem.dataset.type);
+    }
+  }
+};
+
+const searchElement = searchComponent.render();
+
+pageHeader.prepend(searchElement);
+pageHeader.insertBefore(searchElement, pageHeader.lastElementChild);
 
 
 const toggleActiveNavItem = (evt) => {
@@ -47,8 +92,9 @@ const createFilters = (container) => {
     filterComponent.onFilter = (evt, filterType) => {
       evt.preventDefault();
 
-      if (evt.currentTarget !== activeNavItem) {
+      if (!evt.currentTarget.classList.contains(`main-navigation__item--active`)) {
         toggleActiveNavItem(evt);
+        searchComponent.field.value = ``;
 
         updateMoviesList(moviesStore, filterType);
       }
@@ -80,8 +126,9 @@ const statsBtn = mainNav.querySelector(`.main-navigation__item--additional`);
 const onStatsBtnClick = (evt) => {
   evt.preventDefault();
 
-  if (evt.currentTarget !== activeNavItem) {
+  if (!evt.currentTarget.classList.contains(`main-navigation__item--active`)) {
     toggleActiveNavItem(evt);
+    searchComponent.field.value = ``;
 
     getStatistic(moviesStore);
   }
