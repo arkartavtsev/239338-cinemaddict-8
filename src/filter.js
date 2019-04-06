@@ -21,11 +21,14 @@ export default class Filter extends Component {
   }
 
 
-  _addFilterCounter() {
-    return `
-      <span class="main-navigation__item-count">0</span>
-    `;
+  set isMain(state) {
+    this._state.isMain = state;
   }
+
+  set onFilter(fn) {
+    this._onFilter = fn;
+  }
+
 
   get template() {
     return `
@@ -36,20 +39,10 @@ export default class Filter extends Component {
     `.trim();
   }
 
-
-  set isMain(state) {
-    this._state.isMain = state;
-  }
-
-  set onFilter(fn) {
-    this._onFilter = fn;
-  }
-
-
-  _onFilterClick(evt) {
-    if (typeof this._onFilter === `function`) {
-      this._onFilter(evt, this._type);
-    }
+  _addFilterCounter() {
+    return `
+      <span class="main-navigation__item-count">0</span>
+    `;
   }
 
 
@@ -59,5 +52,12 @@ export default class Filter extends Component {
 
   removeListeners() {
     this._element.removeEventListener(`click`, this._onFilterClick);
+  }
+
+
+  _onFilterClick(evt) {
+    if (typeof this._onFilter === `function`) {
+      this._onFilter(evt, this._type);
+    }
   }
 }

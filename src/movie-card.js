@@ -54,28 +54,17 @@ export default class MovieCard extends Component {
   }
 
 
-  _addDescription() {
-    return `
-      <p class="film-card__description">
-        ${this._description.length <= Movie.CARD_DESCRIPTION_MAX_LENGTH ? this._description : `${this._description.slice(0, Movie.CARD_DESCRIPTION_MAX_LENGTH)}...`}
-      </p>
-    `;
+  set isFull(state) {
+    this._state.isFull = state;
   }
 
-  _addCommentsCount() {
-    return `${this._commentsCount} ${this._commentsCount === 1 ? `comment` : `comments`}`;
+
+  set onPopupOpen(fn) {
+    this._onPopupOpen = fn;
   }
 
-  _addControls() {
-    return `
-      <form class="film-card__controls">
-        <button class="film-card__controls-item button film-card__controls-item--add-to-watchlist ${this._state.isInWatchlist ? `film-card__controls-item--active` : ``}" type="button">Add to watchlist</button>
-
-        <button class="film-card__controls-item button film-card__controls-item--mark-as-watched ${this._state.isWatched ? `film-card__controls-item--active` : ``}" type="button">Mark as watched</button>
-
-        <button class="film-card__controls-item button film-card__controls-item--favorite ${this._state.isFavorite ? `film-card__controls-item--active` : ``}" type="button">Mark as favorite</button>
-      </form>
-    `.trim();
+  set onListControlToggle(fn) {
+    this._onListControlToggle = fn;
   }
 
 
@@ -104,74 +93,34 @@ export default class MovieCard extends Component {
   }
 
 
-  set isFull(state) {
-    this._state.isFull = state;
+  // создание частей шаблона
+
+  _addDescription() {
+    return `
+      <p class="film-card__description">
+        ${this._description.length <= Movie.CARD_DESCRIPTION_MAX_LENGTH ? this._description : `${this._description.slice(0, Movie.CARD_DESCRIPTION_MAX_LENGTH)}...`}
+      </p>
+    `;
+  }
+
+  _addCommentsCount() {
+    return `${this._commentsCount} ${this._commentsCount === 1 ? `comment` : `comments`}`;
+  }
+
+  _addControls() {
+    return `
+      <form class="film-card__controls">
+        <button class="film-card__controls-item button film-card__controls-item--add-to-watchlist ${this._state.isInWatchlist ? `film-card__controls-item--active` : ``}" type="button">Add to watchlist</button>
+
+        <button class="film-card__controls-item button film-card__controls-item--mark-as-watched ${this._state.isWatched ? `film-card__controls-item--active` : ``}" type="button">Mark as watched</button>
+
+        <button class="film-card__controls-item button film-card__controls-item--favorite ${this._state.isFavorite ? `film-card__controls-item--active` : ``}" type="button">Mark as favorite</button>
+      </form>
+    `.trim();
   }
 
 
-  set onPopupOpen(fn) {
-    this._onPopupOpen = fn;
-  }
-
-  set onListControlToggle(fn) {
-    this._onListControlToggle = fn;
-  }
-
-
-  _onCommentsBtnClick() {
-    if (typeof this._onPopupOpen === `function`) {
-      this._onPopupOpen();
-    }
-  }
-
-
-  blockCard() {
-    this._addToWatchlistBtn.disabled = true;
-    this._markAsWatchedBtn.disabled = true;
-    this._addToFavoritesBtn.disabled = true;
-  }
-
-  unblockCard() {
-    this._addToWatchlistBtn.disabled = false;
-    this._markAsWatchedBtn.disabled = false;
-    this._addToFavoritesBtn.disabled = false;
-  }
-
-  showError(evt) {
-    this._controls.classList.add(`shake`);
-    evt.target.classList.add(`film-card__controls-item--error`);
-
-    setTimeout(() => {
-      this._controls.classList.remove(`shake`);
-      evt.target.classList.remove(`film-card__controls-item--error`);
-
-      this.unblockCard();
-    }, ERROR_ANIMATION_TIMEOUT);
-  }
-
-  toggleState(evt, stateName) {
-    this._state[stateName] = !this._state[stateName];
-
-    evt.target.classList.toggle(`film-card__controls-item--active`);
-  }
-
-  _onAddToWatchlistBtnClick(evt) {
-    if (typeof this._onListControlToggle === `function`) {
-      this._onListControlToggle(evt, `isInWatchlist`, !this._state.isInWatchlist);
-    }
-  }
-
-  _onMarkAsWatchedBtnClick(evt) {
-    if (typeof this._onListControlToggle === `function`) {
-      this._onListControlToggle(evt, `isWatched`, !this._state.isWatched);
-    }
-  }
-
-  _onAddToFavoritesBtnClick(evt) {
-    if (typeof this._onListControlToggle === `function`) {
-      this._onListControlToggle(evt, `isFavorite`, !this._state.isFavorite);
-    }
-  }
+  // основное
 
 
   addElements() {
@@ -214,6 +163,68 @@ export default class MovieCard extends Component {
       this._addToWatchlistBtn.removeEventListener(`click`, this._onAddToWatchlistBtnClick);
       this._markAsWatchedBtn.removeEventListener(`click`, this._onMarkAsWatchedBtnClick);
       this._addToFavoritesBtn.removeEventListener(`click`, this._onAddToFavoritesBtnClick);
+    }
+  }
+
+
+  // выбор статуса фильма
+
+  blockCard() {
+    this._addToWatchlistBtn.disabled = true;
+    this._markAsWatchedBtn.disabled = true;
+    this._addToFavoritesBtn.disabled = true;
+  }
+
+  unblockCard() {
+    this._addToWatchlistBtn.disabled = false;
+    this._markAsWatchedBtn.disabled = false;
+    this._addToFavoritesBtn.disabled = false;
+  }
+
+  showError(evt) {
+    this._controls.classList.add(`shake`);
+    evt.target.classList.add(`film-card__controls-item--error`);
+
+    setTimeout(() => {
+      this._controls.classList.remove(`shake`);
+      evt.target.classList.remove(`film-card__controls-item--error`);
+
+      this.unblockCard();
+    }, ERROR_ANIMATION_TIMEOUT);
+  }
+
+  toggleState(evt, stateName) {
+    this._state[stateName] = !this._state[stateName];
+
+    evt.target.classList.toggle(`film-card__controls-item--active`);
+  }
+
+
+  // обработчики
+
+
+  _onCommentsBtnClick() {
+    if (typeof this._onPopupOpen === `function`) {
+      this._onPopupOpen();
+    }
+  }
+
+
+  _onAddToWatchlistBtnClick(evt) {
+    if (typeof this._onListControlToggle === `function`) {
+      this._onListControlToggle(evt, `isInWatchlist`, !this._state.isInWatchlist);
+    }
+  }
+
+  _onMarkAsWatchedBtnClick(evt) {
+    if (typeof this._onListControlToggle === `function`) {
+      this._onListControlToggle(evt, `isWatched`, !this._state.isWatched);
+    }
+  }
+
+  _onAddToFavoritesBtnClick(evt) {
+    if (typeof this._onListControlToggle === `function`) {
+      this._onListControlToggle(evt, `isFavorite`, !this._state.isFavorite);
     }
   }
 }

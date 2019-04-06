@@ -86,56 +86,24 @@ export default class MoviePopup extends Component {
   }
 
 
-  _addGenres() {
-    return this._genres.length ?
-      this._genres.map((genre) => `
-      <span class="film-details__genre">${genre}</span>
-      `).join(` `)
-      :
-      `&#8212;`;
+  set onPopupClose(fn) {
+    this._onPopupClose = fn;
   }
 
-  _getCommentMarkup(comment) {
-    return `
-      <li class="film-details__comment">
-        <span class="film-details__comment-emoji">${EMOJI_LIST[comment.emotion]}</span>
-        <div>
-          <p class="film-details__comment-text">${comment.text}</p>
-          <p class="film-details__comment-info">
-            <span class="film-details__comment-author">${comment.author}</span>
-            <span class="film-details__comment-day">${moment(comment.date).toNow(true)} ago</span>
-          </p>
-        </div>
-      </li>
-    `;
+  set onRatingChange(fn) {
+    this._onRatingChange = fn;
   }
 
-  _addComments() {
-    const sortedComments = this._comments.sort((left, right) => left.date - right.date);
-
-    return sortedComments.map((commentData) => this._getCommentMarkup(commentData)).join(` `);
+  set onCommentSend(fn) {
+    this._onCommentSend = fn;
   }
 
-  _addEmojiPickers() {
-    return Object.keys(EMOJI_LIST).map((emojiName) => `
-      <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-${emojiName}" value="${emojiName}"
-      ${emojiName === `neutral-face` ? `checked` : ``}
-      >
-      <label class="film-details__emoji-label" for="emoji-${emojiName}">${EMOJI_LIST[emojiName]}</label>
-    `).join(` `);
+  set onCommentUndo(fn) {
+    this._onCommentUndo = fn;
   }
 
-  _addScorePickers() {
-    let scorePickersMarkup = ``;
-
-    for (let i = 1; i <= Movie.MAX_SCORE; i++) {
-      scorePickersMarkup += `
-        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="${i}" id="rating-${i}" ${i === this._userRating ? `checked` : ``}>
-        <label class="film-details__user-rating-label" for="rating-${i}">${i}</label>
-      `;
-    }
-
-    return scorePickersMarkup;
+  set onListControlToggle(fn) {
+    this._onListControlToggle = fn;
   }
 
 
@@ -279,283 +247,68 @@ export default class MoviePopup extends Component {
   }
 
 
-  set onPopupClose(fn) {
-    this._onPopupClose = fn;
+  // создание частей шаблона
+
+  _addGenres() {
+    return this._genres.length ?
+      this._genres.map((genre) => `
+      <span class="film-details__genre">${genre}</span>
+      `).join(` `)
+      :
+      `&#8212;`;
   }
 
-  set onRatingChange(fn) {
-    this._onRatingChange = fn;
+  _getCommentMarkup(comment) {
+    return `
+      <li class="film-details__comment">
+        <span class="film-details__comment-emoji">${EMOJI_LIST[comment.emotion]}</span>
+        <div>
+          <p class="film-details__comment-text">${comment.text}</p>
+          <p class="film-details__comment-info">
+            <span class="film-details__comment-author">${comment.author}</span>
+            <span class="film-details__comment-day">${moment(comment.date).toNow(true)} ago</span>
+          </p>
+        </div>
+      </li>
+    `;
   }
 
-  set onCommentSend(fn) {
-    this._onCommentSend = fn;
+  _addComments() {
+    const sortedComments = this._comments.sort((left, right) => left.date - right.date);
+
+    return sortedComments.map((commentData) => this._getCommentMarkup(commentData)).join(` `);
   }
 
-  set onCommentUndo(fn) {
-    this._onCommentUndo = fn;
+  _addEmojiPickers() {
+    return Object.keys(EMOJI_LIST).map((emojiName) => `
+      <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-${emojiName}" value="${emojiName}"
+      ${emojiName === `neutral-face` ? `checked` : ``}
+      >
+      <label class="film-details__emoji-label" for="emoji-${emojiName}">${EMOJI_LIST[emojiName]}</label>
+    `).join(` `);
   }
 
-  set onListControlToggle(fn) {
-    this._onListControlToggle = fn;
+  _addScorePickers() {
+    let scorePickersMarkup = ``;
+
+    for (let i = 1; i <= Movie.MAX_SCORE; i++) {
+      scorePickersMarkup += `
+        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="${i}" id="rating-${i}" ${i === this._userRating ? `checked` : ``}>
+        <label class="film-details__user-rating-label" for="rating-${i}">${i}</label>
+      `;
+    }
+
+    return scorePickersMarkup;
   }
+
+
+  // основное
 
 
   update(data) {
     this._state.isInWatchlist = data.isInWatchlist;
     this._state.isWatched = data.isWatched;
     this._state.isFavorite = data.isFavorite;
-  }
-
-
-  _onCloseBtnClick() {
-    if (typeof this._onPopupClose === `function`) {
-      this._onPopupClose();
-    }
-  }
-
-  _onEscPress(evt) {
-    if (evt.keyCode === KeyCode.ESC && typeof this._onPopupClose === `function`) {
-      this._onPopupClose();
-    }
-  }
-
-
-  blockCommentField() {
-    this._commentField.disabled = true;
-  }
-
-  unblockCommentField() {
-    this._commentField.disabled = false;
-  }
-
-  showCommentSendError() {
-    this._commentField.classList.add(`shake`);
-    this._commentField.style.borderColor = `red`;
-
-    setTimeout(() => {
-      this._commentField.classList.remove(`shake`);
-
-      this.unblockCommentField();
-      this._commentField.focus();
-    }, ERROR_ANIMATION_TIMEOUT);
-  }
-
-  _restoreCommentForm() {
-    this._commentField.value = ``;
-
-    this._addEmojiBtn.checked = false;
-    this._addEmojiLabel.innerHTML = EMOJI_LIST[`neutral-face`];
-
-    Array.from(this._emojiPickers).find((picker) => picker.value === `neutral-face`).checked = true;
-  }
-
-  addNewComment(newCommentData) {
-    const commentMarkup = this._getCommentMarkup(newCommentData);
-
-    this._comments.push(newCommentData);
-
-    this._commentsList.insertAdjacentHTML(`beforeend`, commentMarkup);
-    this._commentsCount.textContent = this._comments.length;
-
-    this._restoreCommentForm();
-
-    this._commentStatusOutput.textContent = `Comment added`;
-    this._commentUndoBtn.classList.remove(`visually-hidden`);
-  }
-
-  static createCommentMapper(target) {
-    return {
-      'comment': (value) => {
-        target.text = value;
-      },
-
-      'comment-emoji': (value) => {
-        target.emotion = value;
-      }
-    };
-  }
-
-  _processCommentData(formData) {
-    const entry = {
-      author: `You`,
-      date: Date.now(),
-      text: ``,
-      emotion: ``
-    };
-
-    const commentMapper = MoviePopup.createCommentMapper(entry);
-
-    for (const pair of formData.entries()) {
-      const [property, value] = pair;
-
-      if (commentMapper[property]) {
-        commentMapper[property](value);
-      }
-    }
-
-    return entry;
-  }
-
-  _onCommentFieldKeydown(evt) {
-    if ((evt.ctrlKey || evt.metaKey) && evt.keyCode === KeyCode.ENTER) {
-      const newCommentData = this._processCommentData(new FormData(this._form));
-
-      if (typeof this._onCommentSend === `function`) {
-        this._onCommentSend(newCommentData);
-      }
-    }
-  }
-
-
-  _onEmojiPickerClick(evt) {
-    this._addEmojiLabel.innerHTML = EMOJI_LIST[evt.target.value];
-  }
-
-
-  blockCommentUndoBtn() {
-    this._commentUndoBtn.disabled = true;
-  }
-
-  unblockCommentUndoBtn() {
-    this._commentUndoBtn.disabled = false;
-  }
-
-  showCommentUndoError() {
-    this._commentUndoBtn.classList.add(`shake`);
-    this._commentUndoBtn.style.color = `red`;
-
-    setTimeout(() => {
-      this._commentUndoBtn.classList.remove(`shake`);
-      this._commentUndoBtn.style.color = ``;
-
-      this.unblockCommentUndoBtn();
-      this._commentField.focus();
-    }, ERROR_ANIMATION_TIMEOUT);
-  }
-
-  deleteComment() {
-    this._comments.pop();
-
-    this._commentsList.lastElementChild.remove();
-    this._commentsCount.textContent = this._comments.length;
-
-    this._commentStatusOutput.textContent = `Comment deleted`;
-    this._commentUndoBtn.classList.add(`visually-hidden`);
-  }
-
-  _onCommentUndoBtnClick() {
-    if (typeof this._onCommentUndo === `function`) {
-      this._onCommentUndo();
-    }
-  }
-
-
-  blockRatingPickers() {
-    for (const btn of this._ratingBtns) {
-      btn.disabled = true;
-    }
-  }
-
-  unblockRatingPickers() {
-    for (const btn of this._ratingBtns) {
-      btn.disabled = false;
-    }
-  }
-
-  showChangeRatingError(evt) {
-    const currentBtn = this._ratingBtnsWrapper.querySelector(`[for="${evt.target.id}"]`);
-
-    this._ratingBtnsWrapper.classList.add(`shake`);
-    currentBtn.style.backgroundColor = `red`;
-
-    setTimeout(() => {
-      this._ratingBtnsWrapper.classList.remove(`shake`);
-      currentBtn.style.backgroundColor = ``;
-
-      this.unblockRatingPickers();
-    }, ERROR_ANIMATION_TIMEOUT);
-  }
-
-  changeUserRating(evt) {
-    evt.target.checked = true;
-    this._userRating = +evt.target.value;
-
-    this._userRatingOutput.textContent = `Your rate ${this._userRating}`;
-  }
-
-  _onRatingBtnClick(evt) {
-    evt.preventDefault();
-
-    if (typeof this._onPopupClose === `function`) {
-      this._onRatingChange(evt, +evt.target.value);
-    }
-  }
-
-
-  blockControls() {
-    this._addToWatchlistBtn.disabled = true;
-    this._markAsWatchedBtn.disabled = true;
-    this._addToFavoritesBtn.disabled = true;
-  }
-
-  unblockControls() {
-    this._addToWatchlistBtn.disabled = false;
-    this._markAsWatchedBtn.disabled = false;
-    this._addToFavoritesBtn.disabled = false;
-  }
-
-  showControlsError(evt) {
-    const control = this._listsControls.querySelector(`[for="${evt.target.id}"]`);
-
-    this._listsControls.classList.add(`shake`);
-    control.style.color = `red`;
-
-    setTimeout(() => {
-      this._listsControls.classList.remove(`shake`);
-      control.style.color = ``;
-
-      this.unblockControls();
-    }, ERROR_ANIMATION_TIMEOUT);
-  }
-
-  toggleState(stateName) {
-    this._state[stateName] = !this._state[stateName];
-
-    if (stateName === `isInWatchlist`) {
-      this._listsControls.querySelector(`[for="${this._addToWatchlistBtn.id}"]`).textContent = this._state[stateName] ? `Added to watchlist` : `Add to watchlist`;
-    }
-
-    if (stateName === `isWatched`) {
-      this._listsControls.querySelector(`[for="${this._markAsWatchedBtn.id}"]`).textContent = this._state[stateName] ? `Already watched` : `Mark as watched`;
-    }
-
-    if (stateName === `isFavorite`) {
-      this._listsControls.querySelector(`[for="${this._addToFavoritesBtn.id}"]`).textContent = this._state[stateName] ? `Added to favorites` : `Add to favorites`;
-    }
-  }
-
-  _onAddToWatchlistBtnClick(evt) {
-    evt.preventDefault();
-
-    if (typeof this._onListControlToggle === `function`) {
-      this._onListControlToggle(evt, `isInWatchlist`, !this._state.isInWatchlist);
-    }
-  }
-
-  _onMarkAsWatchedBtnClick(evt) {
-    evt.preventDefault();
-
-    if (typeof this._onListControlToggle === `function`) {
-      this._onListControlToggle(evt, `isWatched`, !this._state.isWatched);
-    }
-  }
-
-  _onAddToFavoritesBtnClick(evt) {
-    evt.preventDefault();
-
-    if (typeof this._onListControlToggle === `function`) {
-      this._onListControlToggle(evt, `isFavorite`, !this._state.isFavorite);
-    }
   }
 
 
@@ -648,5 +401,274 @@ export default class MoviePopup extends Component {
     for (const btn of this._ratingBtns) {
       btn.removeEventListener(`click`, this._onRatingBtnClick);
     }
+  }
+
+
+  // отправка комментария
+
+  blockCommentField() {
+    this._commentField.disabled = true;
+  }
+
+  unblockCommentField() {
+    this._commentField.disabled = false;
+  }
+
+  showCommentSendError() {
+    this._commentField.classList.add(`shake`);
+    this._commentField.style.borderColor = `red`;
+
+    setTimeout(() => {
+      this._commentField.classList.remove(`shake`);
+
+      this.unblockCommentField();
+      this._commentField.focus();
+    }, ERROR_ANIMATION_TIMEOUT);
+  }
+
+  _restoreCommentForm() {
+    this._commentField.value = ``;
+
+    this._addEmojiBtn.checked = false;
+    this._addEmojiLabel.innerHTML = EMOJI_LIST[`neutral-face`];
+
+    Array.from(this._emojiPickers).find((picker) => picker.value === `neutral-face`).checked = true;
+  }
+
+  addNewComment(newCommentData) {
+    const commentMarkup = this._getCommentMarkup(newCommentData);
+
+    this._comments.push(newCommentData);
+
+    this._commentsList.insertAdjacentHTML(`beforeend`, commentMarkup);
+    this._commentsCount.textContent = this._comments.length;
+
+    this._restoreCommentForm();
+
+    this._commentStatusOutput.textContent = `Comment added`;
+    this._commentUndoBtn.classList.remove(`visually-hidden`);
+  }
+
+
+  // удаление комментария
+
+  blockCommentUndoBtn() {
+    this._commentUndoBtn.disabled = true;
+  }
+
+  unblockCommentUndoBtn() {
+    this._commentUndoBtn.disabled = false;
+  }
+
+  showCommentUndoError() {
+    this._commentUndoBtn.classList.add(`shake`);
+    this._commentUndoBtn.style.color = `red`;
+
+    setTimeout(() => {
+      this._commentUndoBtn.classList.remove(`shake`);
+      this._commentUndoBtn.style.color = ``;
+
+      this.unblockCommentUndoBtn();
+      this._commentField.focus();
+    }, ERROR_ANIMATION_TIMEOUT);
+  }
+
+  deleteComment() {
+    this._comments.pop();
+
+    this._commentsList.lastElementChild.remove();
+    this._commentsCount.textContent = this._comments.length;
+
+    this._commentStatusOutput.textContent = `Comment deleted`;
+    this._commentUndoBtn.classList.add(`visually-hidden`);
+  }
+
+
+  // выставление рейтинга
+
+  blockRatingPickers() {
+    for (const btn of this._ratingBtns) {
+      btn.disabled = true;
+    }
+  }
+
+  unblockRatingPickers() {
+    for (const btn of this._ratingBtns) {
+      btn.disabled = false;
+    }
+  }
+
+  showChangeRatingError(evt) {
+    const currentBtn = this._ratingBtnsWrapper.querySelector(`[for="${evt.target.id}"]`);
+
+    this._ratingBtnsWrapper.classList.add(`shake`);
+    currentBtn.style.backgroundColor = `red`;
+
+    setTimeout(() => {
+      this._ratingBtnsWrapper.classList.remove(`shake`);
+      currentBtn.style.backgroundColor = ``;
+
+      this.unblockRatingPickers();
+    }, ERROR_ANIMATION_TIMEOUT);
+  }
+
+  changeUserRating(evt) {
+    evt.target.checked = true;
+    this._userRating = +evt.target.value;
+
+    this._userRatingOutput.textContent = `Your rate ${this._userRating}`;
+  }
+
+
+  // выбор статуса фильма
+
+  blockControls() {
+    this._addToWatchlistBtn.disabled = true;
+    this._markAsWatchedBtn.disabled = true;
+    this._addToFavoritesBtn.disabled = true;
+  }
+
+  unblockControls() {
+    this._addToWatchlistBtn.disabled = false;
+    this._markAsWatchedBtn.disabled = false;
+    this._addToFavoritesBtn.disabled = false;
+  }
+
+  showControlsError(evt) {
+    const control = this._listsControls.querySelector(`[for="${evt.target.id}"]`);
+
+    this._listsControls.classList.add(`shake`);
+    control.style.color = `red`;
+
+    setTimeout(() => {
+      this._listsControls.classList.remove(`shake`);
+      control.style.color = ``;
+
+      this.unblockControls();
+    }, ERROR_ANIMATION_TIMEOUT);
+  }
+
+  toggleState(stateName) {
+    this._state[stateName] = !this._state[stateName];
+
+    if (stateName === `isInWatchlist`) {
+      this._listsControls.querySelector(`[for="${this._addToWatchlistBtn.id}"]`).textContent = this._state[stateName] ? `Added to watchlist` : `Add to watchlist`;
+    }
+
+    if (stateName === `isWatched`) {
+      this._listsControls.querySelector(`[for="${this._markAsWatchedBtn.id}"]`).textContent = this._state[stateName] ? `Already watched` : `Mark as watched`;
+    }
+
+    if (stateName === `isFavorite`) {
+      this._listsControls.querySelector(`[for="${this._addToFavoritesBtn.id}"]`).textContent = this._state[stateName] ? `Added to favorites` : `Add to favorites`;
+    }
+  }
+
+
+  // обработчики
+
+
+  _onCloseBtnClick() {
+    if (typeof this._onPopupClose === `function`) {
+      this._onPopupClose();
+    }
+  }
+
+  _onEscPress(evt) {
+    if (evt.keyCode === KeyCode.ESC && typeof this._onPopupClose === `function`) {
+      this._onPopupClose();
+    }
+  }
+
+
+  _onCommentFieldKeydown(evt) {
+    if ((evt.ctrlKey || evt.metaKey) && evt.keyCode === KeyCode.ENTER) {
+      const newCommentData = MoviePopup.processCommentData(new FormData(this._form));
+
+      if (typeof this._onCommentSend === `function`) {
+        this._onCommentSend(newCommentData);
+      }
+    }
+  }
+
+  _onEmojiPickerClick(evt) {
+    this._addEmojiLabel.innerHTML = EMOJI_LIST[evt.target.value];
+  }
+
+  _onCommentUndoBtnClick() {
+    if (typeof this._onCommentUndo === `function`) {
+      this._onCommentUndo();
+    }
+  }
+
+
+  _onRatingBtnClick(evt) {
+    evt.preventDefault();
+
+    if (typeof this._onPopupClose === `function`) {
+      this._onRatingChange(evt, +evt.target.value);
+    }
+  }
+
+
+  _onAddToWatchlistBtnClick(evt) {
+    evt.preventDefault();
+
+    if (typeof this._onListControlToggle === `function`) {
+      this._onListControlToggle(evt, `isInWatchlist`, !this._state.isInWatchlist);
+    }
+  }
+
+  _onMarkAsWatchedBtnClick(evt) {
+    evt.preventDefault();
+
+    if (typeof this._onListControlToggle === `function`) {
+      this._onListControlToggle(evt, `isWatched`, !this._state.isWatched);
+    }
+  }
+
+  _onAddToFavoritesBtnClick(evt) {
+    evt.preventDefault();
+
+    if (typeof this._onListControlToggle === `function`) {
+      this._onListControlToggle(evt, `isFavorite`, !this._state.isFavorite);
+    }
+  }
+
+
+  // статические методы
+
+
+  static createCommentMapper(target) {
+    return {
+      'comment': (value) => {
+        target.text = value;
+      },
+
+      'comment-emoji': (value) => {
+        target.emotion = value;
+      }
+    };
+  }
+
+  static processCommentData(formData) {
+    const entry = {
+      author: `You`,
+      date: Date.now(),
+      text: ``,
+      emotion: ``
+    };
+
+    const commentMapper = MoviePopup.createCommentMapper(entry);
+
+    for (const pair of formData.entries()) {
+      const [property, value] = pair;
+
+      if (commentMapper[property]) {
+        commentMapper[property](value);
+      }
+    }
+
+    return entry;
   }
 }

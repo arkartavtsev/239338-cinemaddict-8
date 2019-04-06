@@ -61,7 +61,6 @@ export default class Provider {
     }
   }
 
-
   syncMovies() {
     return this._api.syncMovies(objectToArray(this._store.getAll()));
   }

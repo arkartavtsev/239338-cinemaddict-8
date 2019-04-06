@@ -9,19 +9,6 @@ const Method = {
 };
 
 
-const toJSON = (response) => {
-  return response.json();
-};
-
-const checkStatus = (response) => {
-  if (response.status >= 200 && response.status < 300) {
-    return response;
-  } else {
-    throw new Error(`${response.status}: ${response.statusText}`);
-  }
-};
-
-
 export default class API {
   constructor(endPoint, authorization) {
     this._endPoint = endPoint;
@@ -33,7 +20,7 @@ export default class API {
     headers.append(`Authorization`, this._authorization);
 
     return fetch(`${this._endPoint}/${url}`, {method, body, headers})
-      .then(checkStatus)
+      .then(API.checkStatus)
       .catch((err) => {
         throw err;
       });
@@ -44,7 +31,7 @@ export default class API {
     return this._load({
       url: `movies`
     })
-      .then(toJSON)
+      .then(API.toJSON)
       .then(ModelMovie.parseMovies);
   }
 
@@ -55,10 +42,9 @@ export default class API {
       body: JSON.stringify(data),
       headers: new Headers({'Content-Type': `application/json`})
     })
-      .then(toJSON)
+      .then(API.toJSON)
       .then(ModelMovie.parseMovie);
   }
-
 
   syncMovies(data) {
     return this._load({
@@ -67,6 +53,19 @@ export default class API {
       body: JSON.stringify(data),
       headers: new Headers({'Content-Type': `application/json`})
     })
-      .then(toJSON);
+      .then(API.toJSON);
+  }
+
+
+  static toJSON(response) {
+    return response.json();
+  }
+
+  static checkStatus(response) {
+    if (response.status >= 200 && response.status < 300) {
+      return response;
+    } else {
+      throw new Error(`${response.status}: ${response.statusText}`);
+    }
   }
 }

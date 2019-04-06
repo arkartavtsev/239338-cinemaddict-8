@@ -16,6 +16,16 @@ export default class Search extends Component {
   }
 
 
+  set onSearch(fn) {
+    this._onSearch = fn;
+  }
+
+
+  get field() {
+    return this._field;
+  }
+
+
   get template() {
     return `
       <form class="header__search search">
@@ -25,27 +35,8 @@ export default class Search extends Component {
     `.trim();
   }
 
-  get field() {
-    return this._field;
-  }
 
-
-  set onSearch(fn) {
-    this._onSearch = fn;
-  }
-
-
-  _onFieldInput(evt) {
-    if (typeof this._onSearch === `function`) {
-      this._onSearch(evt);
-    }
-  }
-
-  _onFieldKeydown(evt) {
-    if (evt.keyCode === KeyCode.ENTER) {
-      evt.preventDefault();
-    }
-  }
+  // основное
 
 
   addElements() {
@@ -65,5 +56,21 @@ export default class Search extends Component {
   removeListeners() {
     this._field.removeEventListener(`input`, this._onFieldInput);
     this._field.removeEventListener(`keydown`, this._onFieldKeydown);
+  }
+
+
+  // обработчики
+
+
+  _onFieldInput(evt) {
+    if (typeof this._onSearch === `function`) {
+      this._onSearch(evt);
+    }
+  }
+
+  _onFieldKeydown(evt) {
+    if (evt.keyCode === KeyCode.ENTER) {
+      evt.preventDefault();
+    }
   }
 }
