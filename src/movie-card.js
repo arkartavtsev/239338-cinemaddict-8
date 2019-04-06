@@ -1,6 +1,6 @@
 import * as moment from 'moment';
 
-import {ERROR_ANIMATION_TIMEOUT, MOVIE_CARD_DESCRIPTION_MAX_LENGTH} from './const';
+import {Movie, ERROR_ANIMATION_TIMEOUT} from './const';
 
 import Component from './component';
 
@@ -57,7 +57,7 @@ export default class MovieCard extends Component {
   _addDescription() {
     return `
       <p class="film-card__description">
-        ${this._description.length <= MOVIE_CARD_DESCRIPTION_MAX_LENGTH ? this._description : `${this._description.slice(0, MOVIE_CARD_DESCRIPTION_MAX_LENGTH)}...`}
+        ${this._description.length <= Movie.CARD_DESCRIPTION_MAX_LENGTH ? this._description : `${this._description.slice(0, Movie.CARD_DESCRIPTION_MAX_LENGTH)}...`}
       </p>
     `;
   }
@@ -81,7 +81,7 @@ export default class MovieCard extends Component {
 
   get template() {
     return `
-      <article class="film-card ${this._state.isFull ? `` : `film-card--no-controls`}" data-id="${this._id}">
+      <article class="film-card ${this._state.isFull ? `` : `film-card--no-controls`}">
         <h3 class="film-card__title">${this._title}</h3>
         <p class="film-card__rating">${this._rating}</p>
         <p class="film-card__info">

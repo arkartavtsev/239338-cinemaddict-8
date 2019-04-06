@@ -17,6 +17,7 @@ const chartCanvas = statistic.querySelector(`.statistic__chart`);
 
 const rankOutput = statistic.querySelector(`.statistic__rank-label`);
 
+const periodFiltersWrapper = statistic.querySelector(`.statistic__filters`);
 const periodFilters = statistic.querySelectorAll(`.statistic__filters-input`);
 
 
@@ -29,7 +30,11 @@ const getUserRank = (watchedMoviesCount) => {
     return `Fan`;
   }
 
-  return `Novice`;
+  if (watchedMoviesCount <= 10 && watchedMoviesCount > 0) {
+    return `Novice`;
+  }
+
+  return ``;
 };
 
 const showUserRank = (watchedMoviesCount, output) => {
@@ -37,7 +42,7 @@ const showUserRank = (watchedMoviesCount, output) => {
 };
 
 
-const isMovieWatchDateInPeriod = (movie, period) => {
+const isWatchDateInPeriod = (movie, period) => {
   const movieWatchDate = moment(movie.watchDate).startOf(`day`);
 
   return movieWatchDate >= period.startOf(`day`).valueOf();
@@ -46,16 +51,16 @@ const isMovieWatchDateInPeriod = (movie, period) => {
 const getWatchedMoviesFromPeriod = (movies, period) => {
   switch (period) {
     case `statistic-today`:
-      return movies.filter((item) => isMovieWatchDateInPeriod(item, moment()));
+      return movies.filter((item) => isWatchDateInPeriod(item, moment()));
 
     case `statistic-week`:
-      return movies.filter((item) => isMovieWatchDateInPeriod(item, moment().subtract(1, `week`)));
+      return movies.filter((item) => isWatchDateInPeriod(item, moment().subtract(1, `week`)));
 
     case `statistic-month`:
-      return movies.filter((item) => isMovieWatchDateInPeriod(item, moment().subtract(1, `month`)));
+      return movies.filter((item) => isWatchDateInPeriod(item, moment().subtract(1, `month`)));
 
     case `statistic-year`:
-      return movies.filter((item) => isMovieWatchDateInPeriod(item, moment().subtract(1, `year`)));
+      return movies.filter((item) => isWatchDateInPeriod(item, moment().subtract(1, `year`)));
 
     default:
       return movies;
@@ -69,6 +74,7 @@ const restoreStatisticView = () => {
 
   if (chart) {
     chart.destroy();
+    chartCanvas.height = 0;
   }
 };
 
@@ -131,9 +137,9 @@ const showStatistic = (data) => {
 const showStatisticFromPeriod = () => {
   const period = Array.from(periodFilters).find((filter) => filter.checked === true).id;
 
-  const moviesToShow = getWatchedMoviesFromPeriod(watchedMovies, period);
+  const moviesFromPeriod = getWatchedMoviesFromPeriod(watchedMovies, period);
 
-  showStatistic(moviesToShow);
+  showStatistic(moviesFromPeriod);
 };
 
 
@@ -143,13 +149,14 @@ const getStatistic = (data) => {
   if (!watchedMovies.length) {
     restoreStatisticView();
     rankOutput.parentElement.classList.add(`visually-hidden`);
+    periodFiltersWrapper.classList.add(`visually-hidden`);
 
     showMessage(`There is a lack of data to show statistic. Mark some movies as watched.`, statistic);
 
     return;
   }
 
-
+  periodFiltersWrapper.classList.remove(`visually-hidden`);
   showStatisticFromPeriod();
 
   rankOutput.parentElement.classList.remove(`visually-hidden`);

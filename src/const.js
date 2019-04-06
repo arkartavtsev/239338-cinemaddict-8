@@ -4,6 +4,14 @@ export const KeyCode = {
 };
 
 
+export const Movie = {
+  EXTRA_COUNT: 2,
+  SHOW_PORTION: 5,
+  MAX_SCORE: 9,
+  CARD_DESCRIPTION_MAX_LENGTH: 140
+};
+
+
 export const FILTERS = [
   `All movies`,
   `Watchlist`,
@@ -12,14 +20,11 @@ export const FILTERS = [
 ];
 
 
-export const ERROR_ANIMATION_TIMEOUT = 600;
-
-export const EXTRA_MOVIES_COUNT = 2;
-export const MOVIE_MAX_SCORE = 9;
-export const MOVIE_CARD_DESCRIPTION_MAX_LENGTH = 140;
-
 export const EMOJI_LIST = {
   'sleeping': `&#x1F634`,
   'neutral-face': `&#x1F610`,
   'grinning': `&#x1F600`
 };
+
+
+export const ERROR_ANIMATION_TIMEOUT = 600;

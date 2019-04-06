@@ -4,7 +4,7 @@ import Provider from './provider';
 
 
 const END_POINT = `https://es8-demo-srv.appspot.com/moowle`;
-const AUTHORIZATION = `Basic eo00w5900ik29889ak`;
+const AUTHORIZATION = `Basic eo00w5900ik29889ak1`;
 
 const MOVIES_STORE_KEY = `movies-store-key`;
 
@@ -26,4 +26,6 @@ window.addEventListener(`online`, () => {
 });
 
 
-export {provider};
+export {
+  provider
+};

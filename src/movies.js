@@ -1,8 +1,8 @@
-import {EXTRA_MOVIES_COUNT} from './const';
+import {Movie} from './const';
 import {showMessage} from './util';
-import {provider} from './backend';
 
-import {showUserRank} from './show-statistics';
+import {provider} from './backend';
+import {showUserRank} from './statistic';
 
 import MovieCard from './movie-card';
 import MoviePopup from './movie-popup';
@@ -18,17 +18,21 @@ const profileRankOutput = document.querySelector(`.profile__rating`);
 const totalMoviesCounter = document.querySelector(`.footer__statistics p`);
 
 
+let searchField;
 let filtersCounters;
 let openedPopup;
 
-let moviesStore = [];
-let moviesToShow = [];
+const loadedMovies = [];
+let selectedMovies = [];
 
 
-const stateToFilterName = {
-  isInWatchlist: `watchlist`,
-  isWatched: `history`,
-  isFavorite: `favorites`
+const showSearchedMovies = (searchRequest) => {
+  const searchedMovies = loadedMovies.filter((item) => item.title.toLowerCase().indexOf(searchRequest) !== -1);
+
+  mainFilmsList.innerHTML = ``;
+  loadMorebtn.classList.add(`visually-hidden`);
+
+  createCards(searchedMovies);
 };
 
 
@@ -44,10 +48,10 @@ const selectMovies = (movies, criterion) => {
       return movies.filter((item) => item.isFavorite);
 
     case `top-rated`:
-      return movies.slice().sort((left, right) => right.rating - left.rating).splice(0, EXTRA_MOVIES_COUNT);
+      return movies.slice().sort((left, right) => right.rating - left.rating).splice(0, Movie.EXTRA_COUNT);
 
     case `most-commented`:
-      return movies.filter((movie) => movie.comments.length).sort((left, right) => right.comments.length - left.comments.length).splice(0, EXTRA_MOVIES_COUNT);
+      return movies.filter((movie) => movie.comments.length).sort((left, right) => right.comments.length - left.comments.length).splice(0, Movie.EXTRA_COUNT);
 
     default:
       return movies;
@@ -55,25 +59,42 @@ const selectMovies = (movies, criterion) => {
 };
 
 
-const handleWatchedStateChange = (movieData, stateValue) => {
-  const watchedMovies = selectMovies(moviesStore, `history`);
-  showUserRank(watchedMovies.length, profileRankOutput);
-
-  if (stateValue === true) {
-    movieData.watchDate = Date.now();
-  } else {
-    delete movieData.watchDate;
-  }
-};
-
 const updateFiltersCounters = () => {
   if (!filtersCounters) {
     filtersCounters = document.querySelectorAll(`.main-navigation__item-count`);
   }
 
   for (const counter of filtersCounters) {
-    counter.textContent = selectMovies(moviesStore, counter.parentElement.dataset.type).length;
+    counter.textContent = selectMovies(loadedMovies, counter.parentElement.dataset.type).length;
   }
+};
+
+
+const updateBoardAfterChange = () => {
+  if (!searchField) {
+    searchField = document.querySelector(`.search__field`);
+  }
+
+  if (searchField.value) {
+    const searchRequest = searchField.value.trim().toLowerCase();
+
+    showSearchedMovies(searchRequest);
+  } else {
+    const activeFilterType = document.querySelector(`.main-navigation__item--active`).dataset.type;
+
+    selectedMovies = selectMovies(loadedMovies, activeFilterType);
+
+    showMovies(mainFilmsList.children.length);
+  }
+
+  updateFiltersCounters();
+};
+
+const handleWatchedStateChange = (movieData, stateValue) => {
+  const watchedMovies = selectMovies(loadedMovies, `history`);
+  showUserRank(watchedMovies.length, profileRankOutput);
+
+  movieData.watchDate = stateValue === true ? Date.now() : null;
 };
 
 
@@ -107,18 +128,7 @@ const createMovie = (movieData, isFull) => {
 
     provider.updateMovie(movieData.id, movieData.toRAW())
     .then(() => {
-      movieCardComponent.unblockCard();
-      movieCardComponent.toggleState(evt, stateName);
-
-      if (document.querySelector(`.main-navigation__item--active`).dataset.type === stateToFilterName[stateName]) {
-        movieCardComponent.unrender();
-
-        if (!mainFilmsList.children.length) {
-          showMessage(`There are no suitable movies to show.`, mainFilmsList);
-        }
-      }
-
-      updateFiltersCounters();
+      updateBoardAfterChange();
 
       if (stateName === `isWatched`) {
         handleWatchedStateChange(movieData, stateValue);
@@ -132,17 +142,10 @@ const createMovie = (movieData, isFull) => {
 
 
   moviePopupComponent.onPopupClose = () => {
-    const oldCardElement = mainFilmsList.querySelector(`[data-id="${moviePopupComponent._id}"]`);
+    updateBoardAfterChange();
 
-    const updatedMovieCardComponent = new MovieCard(movieData);
-    const newCardElement = updatedMovieCardComponent.render();
-
-    mainFilmsList.replaceChild(newCardElement, oldCardElement);
-
-    updateExtraMovies(moviesStore, `top-rated`, topRatedFilmsList);
-    updateExtraMovies(moviesStore, `most-commented`, mostCommentedFilmsList);
-
-    updateFiltersCounters();
+    updateExtraMovies(`top-rated`, topRatedFilmsList);
+    updateExtraMovies(`most-commented`, mostCommentedFilmsList);
 
     moviePopupComponent.unrender();
     openedPopup = null;
@@ -244,32 +247,36 @@ const createCards = (data, container = mainFilmsList, isFull = true) => {
 };
 
 
-const updateMoviesList = (movies, criterion) => {
-  updateFiltersCounters();
+const showMovies = (count) => {
+  const moviesToShow = selectedMovies.slice(0, count);
 
-  if (movies.length) {
-    moviesToShow = selectMovies(movies, criterion);
-
-    if (moviesToShow.length <= 5) {
-      loadMorebtn.classList.add(`visually-hidden`);
-    } else {
-      loadMorebtn.classList.remove(`visually-hidden`);
-    }
-
-    mainFilmsList.innerHTML = ``;
-    createCards(moviesToShow.slice(0, 5));
-  }
+  mainFilmsList.innerHTML = ``;
+  createCards(moviesToShow);
 };
 
 
-const updateExtraMovies = (movies, criterion, moviesList) => {
-  moviesList.innerHTML = ``;
-
-  if (movies.length) {
-    const extraMovies = selectMovies(movies, criterion);
-
-    createCards(extraMovies, moviesList, false);
+const showFilteredMovies = (criterion) => {
+  if (!loadedMovies.length) {
+    return;
   }
+
+  selectedMovies = selectMovies(loadedMovies, criterion);
+
+  if (selectedMovies.length <= Movie.SHOW_PORTION) {
+    loadMorebtn.classList.add(`visually-hidden`);
+  } else {
+    loadMorebtn.classList.remove(`visually-hidden`);
+  }
+
+  showMovies(Movie.SHOW_PORTION);
+};
+
+
+const updateExtraMovies = (type, moviesList) => {
+  const extraMovies = selectMovies(loadedMovies, type);
+
+  moviesList.innerHTML = ``;
+  createCards(extraMovies, moviesList, false);
 };
 
 
@@ -293,28 +300,34 @@ loadMovies()
       const watchedMovies = selectMovies(movies, `history`);
       showUserRank(watchedMovies.length, profileRankOutput);
 
-      moviesStore = movies.slice();
+      for (const movie of movies) {
+        loadedMovies.push(movie);
+      }
+
+      updateFiltersCounters();
+      showFilteredMovies(`all`);
     }
 
-    updateMoviesList(moviesStore, `all`, mainFilmsList);
-
-    updateExtraMovies(moviesStore, `top-rated`, topRatedFilmsList);
-    updateExtraMovies(moviesStore, `most-commented`, mostCommentedFilmsList);
+    updateExtraMovies(`top-rated`, topRatedFilmsList);
+    updateExtraMovies(`most-commented`, mostCommentedFilmsList);
   });
 
 
 const onLoadMoreBtnClick = () => {
   const renderedCardsCount = mainFilmsList.children.length;
-  const toshow = moviesToShow.slice(renderedCardsCount, renderedCardsCount + 5);
+  const moviesToShow = selectedMovies.slice(renderedCardsCount, renderedCardsCount + Movie.SHOW_PORTION);
 
-  if (renderedCardsCount + 5 >= moviesToShow.length) {
+  if (renderedCardsCount + Movie.SHOW_PORTION >= selectedMovies.length) {
     loadMorebtn.classList.add(`visually-hidden`);
   }
 
-  createCards(toshow);
+  createCards(moviesToShow);
 };
 
 loadMorebtn.addEventListener(`click`, onLoadMoreBtnClick);
 
 
-export {moviesStore, updateMoviesList, createCards};
+export {
+  loadedMovies,
+  showFilteredMovies,
+  showSearchedMovies};

@@ -1,10 +1,10 @@
 import {FILTERS} from './const';
 
+import {loadedMovies, showFilteredMovies, showSearchedMovies} from './movies';
+import {getStatistic} from './statistic';
+
 import Search from './search';
 import Filter from './filter';
-
-import {moviesStore, updateMoviesList, createCards} from './movies';
-import {getStatistic} from './show-statistics';
 
 
 const pageHeader = document.querySelector(`.header`);
@@ -13,49 +13,10 @@ const mainNav = document.querySelector(`.main-navigation`);
 let activeNavItem;
 
 const films = document.querySelector(`.films`);
-const mainFilmsList = films.querySelector(`.films-list .films-list__container`);
-const loadMorebtn = films.querySelector(`.films-list__show-more`);
-
 const statistic = document.querySelector(`.statistic`);
 
 
-const searchComponent = new Search();
-
-searchComponent.onSearch = () => {
-  if (activeNavItem) {
-    activeNavItem.classList.remove(`main-navigation__item--active`);
-
-    if (activeNavItem.classList.contains(`main-navigation__item--additional`)) {
-      films.classList.remove(`visually-hidden`);
-      statistic.classList.add(`visually-hidden`);
-    }
-  }
-
-  const searchRequest = searchComponent.field.value.trim().toLowerCase();
-
-  const searchedMovies = moviesStore.filter((item) => item.title.toLowerCase().indexOf(searchRequest) !== -1);
-
-  mainFilmsList.innerHTML = ``;
-  loadMorebtn.classList.add(`visually-hidden`);
-
-  createCards(searchedMovies);
-
-  if (!searchRequest.length) {
-    activeNavItem.classList.add(`main-navigation__item--active`);
-
-    if (activeNavItem.classList.contains(`main-navigation__item--additional`)) {
-      films.classList.add(`visually-hidden`);
-      statistic.classList.remove(`visually-hidden`);
-    } else {
-      updateMoviesList(moviesStore, activeNavItem.dataset.type);
-    }
-  }
-};
-
-const searchElement = searchComponent.render();
-
-pageHeader.prepend(searchElement);
-pageHeader.insertBefore(searchElement, pageHeader.lastElementChild);
+// переключение между блоками
 
 
 const toggleActiveNavItem = (evt) => {
@@ -69,16 +30,53 @@ const toggleActiveNavItem = (evt) => {
 };
 
 
-// фильтры
+const showMoviesBoard = () => {
+  films.classList.remove(`visually-hidden`);
+  statistic.classList.add(`visually-hidden`);
+};
+
+const showStatisticBoard = () => {
+  films.classList.add(`visually-hidden`);
+  statistic.classList.remove(`visually-hidden`);
+};
 
 
-const deleteExistingFilters = () => {
-  const existingFilters = mainNav.querySelectorAll(`.main-navigation__item:not(.main-navigation__item--additional)`);
+// поиск
 
-  for (const filter of existingFilters) {
-    filter.remove();
+
+const searchComponent = new Search();
+
+searchComponent.onSearch = () => {
+  if (activeNavItem) {
+    activeNavItem.classList.remove(`main-navigation__item--active`);
+
+    if (activeNavItem.classList.contains(`main-navigation__item--additional`)) {
+      showMoviesBoard();
+    }
+  }
+
+  const searchRequest = searchComponent.field.value.trim().toLowerCase();
+
+  showSearchedMovies(searchRequest);
+
+  if (!searchRequest.length) {
+    activeNavItem.classList.add(`main-navigation__item--active`);
+
+    if (activeNavItem.classList.contains(`main-navigation__item--additional`)) {
+      showStatisticBoard();
+    } else {
+      showFilteredMovies(activeNavItem.dataset.type);
+    }
   }
 };
+
+const searchElement = searchComponent.render();
+
+pageHeader.prepend(searchElement);
+pageHeader.insertBefore(searchElement, pageHeader.lastElementChild);
+
+
+// фильтры
 
 
 const createFilters = (container) => {
@@ -96,12 +94,11 @@ const createFilters = (container) => {
         toggleActiveNavItem(evt);
         searchComponent.field.value = ``;
 
-        updateMoviesList(moviesStore, filterType);
+        showFilteredMovies(filterType);
       }
 
       if (films.classList.contains(`visually-hidden`)) {
-        films.classList.remove(`visually-hidden`);
-        statistic.classList.add(`visually-hidden`);
+        showMoviesBoard();
       }
     };
 
@@ -111,8 +108,6 @@ const createFilters = (container) => {
   container.prepend(fragment);
 };
 
-
-deleteExistingFilters();
 createFilters(mainNav);
 
 activeNavItem = mainNav.querySelector(`.main-navigation__item--active`);
@@ -130,12 +125,11 @@ const onStatsBtnClick = (evt) => {
     toggleActiveNavItem(evt);
     searchComponent.field.value = ``;
 
-    getStatistic(moviesStore);
+    getStatistic(loadedMovies);
   }
 
   if (statistic.classList.contains(`visually-hidden`)) {
-    statistic.classList.remove(`visually-hidden`);
-    films.classList.add(`visually-hidden`);
+    showStatisticBoard();
   }
 };
 

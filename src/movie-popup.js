@@ -1,6 +1,6 @@
 import * as moment from 'moment';
 
-import {KeyCode, EMOJI_LIST, MOVIE_MAX_SCORE, ERROR_ANIMATION_TIMEOUT} from './const';
+import {KeyCode, Movie, EMOJI_LIST, ERROR_ANIMATION_TIMEOUT} from './const';
 
 import Component from './component';
 
@@ -125,20 +125,10 @@ export default class MoviePopup extends Component {
     `).join(` `);
   }
 
-  _getMovieStatus() {
-    if (this._state.isWatched) {
-      return `Already watched`;
-    } else if (this._state.isInWatchlist) {
-      return `Will watch`;
-    } else {
-      return `Not watched`;
-    }
-  }
-
   _addScorePickers() {
     let scorePickersMarkup = ``;
 
-    for (let i = 1; i <= MOVIE_MAX_SCORE; i++) {
+    for (let i = 1; i <= Movie.MAX_SCORE; i++) {
       scorePickersMarkup += `
         <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="${i}" id="rating-${i}" ${i === this._userRating ? `checked` : ``}>
         <label class="film-details__user-rating-label" for="rating-${i}">${i}</label>
