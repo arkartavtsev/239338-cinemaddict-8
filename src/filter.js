@@ -34,15 +34,9 @@ export default class Filter extends Component {
     return `
       <a class="main-navigation__item ${this._state.isMain ? `main-navigation__item--active` : ``}" data-type="${this._type}" href="#${this._type}">
         ${this._title}
-        ${!this._state.isMain ? this._addFilterCounter() : ``}
+        ${!this._state.isMain ? Filter.addFilterCounter() : ``}
       </a>
     `.trim();
-  }
-
-  _addFilterCounter() {
-    return `
-      <span class="main-navigation__item-count">0</span>
-    `;
   }
 
 
@@ -59,5 +53,12 @@ export default class Filter extends Component {
     if (typeof this._onFilter === `function`) {
       this._onFilter(evt, this._type);
     }
+  }
+
+
+  static addFilterCounter() {
+    return `
+      <span class="main-navigation__item-count">0</span>
+    `;
   }
 }

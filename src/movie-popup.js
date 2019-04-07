@@ -210,7 +210,7 @@ export default class MoviePopup extends Component {
                 <input type="checkbox" class="film-details__add-emoji visually-hidden" id="add-emoji">
 
                 <div class="film-details__emoji-list">
-                  ${this._addEmojiPickers()}
+                  ${MoviePopup.addEmojiPickers()}
                 </div>
               </div>
               <label class="film-details__comment-label">
@@ -258,34 +258,10 @@ export default class MoviePopup extends Component {
       `&#8212;`;
   }
 
-  _getCommentMarkup(comment) {
-    return `
-      <li class="film-details__comment">
-        <span class="film-details__comment-emoji">${EMOJI_LIST[comment.emotion]}</span>
-        <div>
-          <p class="film-details__comment-text">${comment.text}</p>
-          <p class="film-details__comment-info">
-            <span class="film-details__comment-author">${comment.author}</span>
-            <span class="film-details__comment-day">${moment(comment.date).toNow(true)} ago</span>
-          </p>
-        </div>
-      </li>
-    `;
-  }
-
   _addComments() {
     const sortedComments = this._comments.sort((left, right) => left.date - right.date);
 
-    return sortedComments.map((commentData) => this._getCommentMarkup(commentData)).join(` `);
-  }
-
-  _addEmojiPickers() {
-    return Object.keys(EMOJI_LIST).map((emojiName) => `
-      <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-${emojiName}" value="${emojiName}"
-      ${emojiName === `neutral-face` ? `checked` : ``}
-      >
-      <label class="film-details__emoji-label" for="emoji-${emojiName}">${EMOJI_LIST[emojiName]}</label>
-    `).join(` `);
+    return sortedComments.map((commentData) => MoviePopup.getCommentMarkup(commentData)).join(` `);
   }
 
   _addScorePickers() {
@@ -436,7 +412,7 @@ export default class MoviePopup extends Component {
   }
 
   addNewComment(newCommentData) {
-    const commentMarkup = this._getCommentMarkup(newCommentData);
+    const commentMarkup = MoviePopup.getCommentMarkup(newCommentData);
 
     this._comments.push(newCommentData);
 
@@ -638,6 +614,31 @@ export default class MoviePopup extends Component {
 
   // статические методы
 
+
+  static addEmojiPickers() {
+    return Object.keys(EMOJI_LIST).map((emojiName) => `
+      <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-${emojiName}" value="${emojiName}"
+      ${emojiName === `neutral-face` ? `checked` : ``}
+      >
+      <label class="film-details__emoji-label" for="emoji-${emojiName}">${EMOJI_LIST[emojiName]}</label>
+    `).join(` `);
+  }
+
+
+  static getCommentMarkup(comment) {
+    return `
+      <li class="film-details__comment">
+        <span class="film-details__comment-emoji">${EMOJI_LIST[comment.emotion]}</span>
+        <div>
+          <p class="film-details__comment-text">${comment.text}</p>
+          <p class="film-details__comment-info">
+            <span class="film-details__comment-author">${comment.author}</span>
+            <span class="film-details__comment-day">${moment(comment.date).toNow(true)} ago</span>
+          </p>
+        </div>
+      </li>
+    `;
+  }
 
   static createCommentMapper(target) {
     return {

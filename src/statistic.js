@@ -1,5 +1,6 @@
 import * as moment from 'moment';
 
+import {UserRankThreshold} from './const';
 import {hideMessage, showMessage} from './util';
 import renderChart from './render-chart';
 
@@ -22,15 +23,15 @@ const periodFilters = statistic.querySelectorAll(`.statistic__filters-input`);
 
 
 const getUserRank = (watchedMoviesCount) => {
-  if (watchedMoviesCount > 20) {
+  if (watchedMoviesCount >= UserRankThreshold.MOVIE_BUFF) {
     return `Movie Buff`;
   }
 
-  if (watchedMoviesCount <= 20 && watchedMoviesCount > 10) {
+  if (watchedMoviesCount < UserRankThreshold.MOVIE_BUFF && watchedMoviesCount >= UserRankThreshold.FAN) {
     return `Fan`;
   }
 
-  if (watchedMoviesCount <= 10 && watchedMoviesCount > 0) {
+  if (watchedMoviesCount < UserRankThreshold.FAN && watchedMoviesCount > 0) {
     return `Novice`;
   }
 

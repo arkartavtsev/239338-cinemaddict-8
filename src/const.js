@@ -12,6 +12,12 @@ export const Movie = {
 };
 
 
+export const UserRankThreshold = {
+  FAN: 11,
+  MOVIE_BUFF: 20
+};
+
+
 export const FILTERS = [
   `All movies`,
   `Watchlist`,
