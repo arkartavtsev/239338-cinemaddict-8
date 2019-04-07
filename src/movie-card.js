@@ -193,12 +193,6 @@ export default class MovieCard extends Component {
     }, ERROR_ANIMATION_TIMEOUT);
   }
 
-  toggleState(evt, stateName) {
-    this._state[stateName] = !this._state[stateName];
-
-    evt.target.classList.toggle(`film-card__controls-item--active`);
-  }
-
 
   // обработчики
 

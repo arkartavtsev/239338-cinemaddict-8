@@ -12,7 +12,7 @@ const mainFilmsList = document.querySelector(`.films-list .films-list__container
 const topRatedFilmsList = document.querySelector(`.films-list--top-rated .films-list__container`);
 const mostCommentedFilmsList = document.querySelector(`.films-list--most-commented .films-list__container`);
 
-const loadMorebtn = document.querySelector(`.films-list__show-more`);
+const loadMoreBtn = document.querySelector(`.films-list__show-more`);
 
 const profileRankOutput = document.querySelector(`.profile__rating`);
 const totalMoviesCounter = document.querySelector(`.footer__statistics p`);
@@ -30,7 +30,7 @@ const showSearchedMovies = (searchRequest) => {
   const searchedMovies = loadedMovies.filter((item) => item.title.toLowerCase().indexOf(searchRequest) !== -1);
 
   mainFilmsList.innerHTML = ``;
-  loadMorebtn.classList.add(`visually-hidden`);
+  loadMoreBtn.classList.add(`visually-hidden`);
 
   createCards(searchedMovies);
 };
@@ -118,7 +118,7 @@ const createMovie = (movieData, isFull) => {
     moviePopupComponent.update(movieData);
 
     const popupElement = moviePopupComponent.render();
-    document.body.appendChild(popupElement);
+    document.body.append(popupElement);
   };
 
   movieCardComponent.onListControlToggle = (evt, stateName, stateValue) => {
@@ -240,10 +240,10 @@ const createCards = (data, container = mainFilmsList, isFull = true) => {
   for (const movieData of data) {
     const movieElement = createMovie(movieData, isFull);
 
-    fragment.appendChild(movieElement);
+    fragment.append(movieElement);
   }
 
-  container.appendChild(fragment);
+  container.append(fragment);
 };
 
 
@@ -261,12 +261,7 @@ const showFilteredMovies = (criterion) => {
   }
 
   selectedMovies = selectMovies(loadedMovies, criterion);
-
-  if (selectedMovies.length <= Movie.SHOW_PORTION) {
-    loadMorebtn.classList.add(`visually-hidden`);
-  } else {
-    loadMorebtn.classList.remove(`visually-hidden`);
-  }
+  loadMoreBtn.classList.toggle(`visually-hidden`, selectedMovies.length <= Movie.SHOW_PORTION);
 
   showMovies(Movie.SHOW_PORTION);
 };
@@ -318,13 +313,13 @@ const onLoadMoreBtnClick = () => {
   const moviesToShow = selectedMovies.slice(renderedCardsCount, renderedCardsCount + Movie.SHOW_PORTION);
 
   if (renderedCardsCount + Movie.SHOW_PORTION >= selectedMovies.length) {
-    loadMorebtn.classList.add(`visually-hidden`);
+    loadMoreBtn.classList.add(`visually-hidden`);
   }
 
   createCards(moviesToShow);
 };
 
-loadMorebtn.addEventListener(`click`, onLoadMoreBtnClick);
+loadMoreBtn.addEventListener(`click`, onLoadMoreBtnClick);
 
 
 export {

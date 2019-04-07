@@ -22,7 +22,10 @@ window.addEventListener(`offline`, () => {
 window.addEventListener(`online`, () => {
   document.title = document.title.split(`[OFFLINE]`)[0];
 
-  provider.syncMovies();
+  if (provider.isNeedSync) {
+    provider.syncMovies();
+    provider.isNeedSync = false;
+  }
 });
 
 
